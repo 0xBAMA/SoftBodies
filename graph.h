@@ -61,25 +61,31 @@ using std::endl;
 
 
 
+#include "shader.h"
+
 
 struct node
 {
 
 }; 
 
+
 struct edge 
 { 
 
 };
 
+
 class graph 
 { 
     public:
         //constructor sets up opengl data initially
+        graph();
+
         //function to update physics simulation
         //function to update the point locations/colors on the GPU, from the CPU side information
 
-        std::vector<glm::dvec4> points;
+        //std::vector<glm::dvec4> points;
 
 
     private:
@@ -88,3 +94,24 @@ class graph
         GLuint buffer;
         GLuint shader;
 };
+
+
+graph::graph()
+{
+    //VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    //BUFFER
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer); 
+
+    //SHADER
+    shader = Shader("main.vs.glsl", "main.fs.glsl").Program;
+
+    //get the data together
+    //
+    //send it to the gpu
+    //
+    //
+}
