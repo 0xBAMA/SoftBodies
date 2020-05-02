@@ -163,6 +163,7 @@ class graph
           glUniformMatrix4fv(glGetUniformLocation(shader, "perspective"), 1, GL_TRUE, glm::value_ptr(proj));
         }
 
+        void set_highlight_index(int i) {highlight_index = i;}
     private:
 
         //OpenGL Data
@@ -173,10 +174,14 @@ class graph
         int num_bytes_points;
         int num_bytes_colors;
 
-        int num_edges_to_draw;
-        int num_nodes_to_draw;
+        int chassis_start, chassis_num;
+        int suspension_start, suspension_num;
+        int nodes_start, nodes_num;
 
 
+
+
+        int highlight_index = 0;
 
         std::vector<node> nodes;
         std::vector<edge> edges;
@@ -482,68 +487,88 @@ void graph::load_frame_points()
     add_edge(22+OFFSET, 38+OFFSET, CHASSIS);
     add_edge(3+OFFSET, 47+OFFSET, CHASSIS);
 
+    add_edge(1, 14, SUSPENSION);
+    add_edge(1, 16, SUSPENSION);
+    add_edge(1, 18, SUSPENSION);
+    add_edge(1, 20, SUSPENSION);
+    add_edge(1, 21, SUSPENSION);
+    add_edge(1, 22, SUSPENSION);
+    add_edge(1, 23, SUSPENSION);
+    add_edge(1, 24, SUSPENSION);
+    add_edge(1, 25, SUSPENSION);
 
-  // //suspension linkages
-  // add_edge(0, 1, SUSPENSION);
-  // add_edge(0, 2, SUSPENSION1);
-  // add_edge(0, 3, SUSPENSION1);
-  // add_edge(0, 4, SUSPENSION1);
-  // add_edge(0, 5, SUSPENSION1);
-  // add_edge(0, 6, SUSPENSION1);
-  // add_edge(0, 7, SUSPENSION1);
-  // add_edge(0, 8, SUSPENSION1);
-  // add_edge(0, 9, SUSPENSION1);
-  // add_edge(0, 10, SUSPENSION1);
-  // add_edge(0, 11, SUSPENSION1);
-  // add_edge(0, 12, SUSPENSION1);
-  // add_edge(0, 13, SUSPENSION1);
-  // add_edge(0, 14, SUSPENSION1);
-  // add_edge(0, 15, SUSPENSION1);
-  // add_edge(0, 16, SUSPENSION1);
-  // add_edge(0, 17, SUSPENSION1);
-  // add_edge(0, 18, SUSPENSION1);
-  // add_edge(0, 19, SUSPENSION1);
-  // add_edge(0, 20, SUSPENSION1);
-  // add_edge(0, 21, SUSPENSION1);
-  // add_edge(0, 22, SUSPENSION1);
-  // add_edge(0, 23, SUSPENSION1);
-  // add_edge(0, 24, SUSPENSION1);
-  // add_edge(0, 25, SUSPENSION1);
-  // add_edge(0, 26, SUSPENSION1);
-  // add_edge(0, 27, SUSPENSION1);
-  // add_edge(0, 28, SUSPENSION1);
-  // add_edge(0, 29, SUSPENSION1);
-  // add_edge(0, 30, SUSPENSION1);
-  // add_edge(0, 31, SUSPENSION1);
-  // add_edge(0, 32, SUSPENSION1);
-  // add_edge(0, 33, SUSPENSION1);
-  // add_edge(0, 34, SUSPENSION1);
-  // add_edge(0, 35, SUSPENSION1);
-  // add_edge(0, 36, SUSPENSION1);
-  // add_edge(0, 37, SUSPENSION1);
-  // add_edge(0, 38, SUSPENSION1);
-  // add_edge(0, 39, SUSPENSION1);
-  // add_edge(0, 40, SUSPENSION1);
-  // add_edge(0, 41, SUSPENSION1);
-  // add_edge(0, 42, SUSPENSION1);
-  // add_edge(0, 43, SUSPENSION1);
-  // add_edge(0, 44, SUSPENSION1);
-  // add_edge(0, 45, SUSPENSION1);
-  // add_edge(0, 46, SUSPENSION1);
-  // add_edge(0, 47, SUSPENSION1);
-  // add_edge(0, 48, SUSPENSION1);
-  // add_edge(0, 49, SUSPENSION1);
-  // add_edge(0, 50, SUSPENSION1);
-  // add_edge(0, 51, SUSPENSION1);
-  // add_edge(0, 52, SUSPENSION1);
-  // add_edge(0, 53, SUSPENSION1);
-  // add_edge(0, 54, SUSPENSION1);
+    add_edge(0, 14, SUSPENSION1);
+    add_edge(0, 16, SUSPENSION1);
+    add_edge(0, 18, SUSPENSION1);
+    add_edge(0, 20, SUSPENSION1);
+    add_edge(0, 21, SUSPENSION1);
+    add_edge(0, 22, SUSPENSION1);
+    add_edge(0, 23, SUSPENSION1);
+    add_edge(0, 24, SUSPENSION1);
+    add_edge(0, 25, SUSPENSION1);
 
+    add_edge(1, 36, SUSPENSION1);
+    add_edge(1, 38, SUSPENSION1);
+    add_edge(1, 40, SUSPENSION1);
+    add_edge(1, 41, SUSPENSION1);
+    add_edge(1, 43, SUSPENSION1);
+    add_edge(1, 44, SUSPENSION1);
+    add_edge(1, 45, SUSPENSION1);
+    add_edge(1, 46, SUSPENSION1);
+    add_edge(1, 47, SUSPENSION1);
 
+    add_edge(0, 36, SUSPENSION);
+    add_edge(0, 38, SUSPENSION);
+    add_edge(0, 40, SUSPENSION);
+    add_edge(0, 41, SUSPENSION);
+    add_edge(0, 43, SUSPENSION);
+    add_edge(0, 44, SUSPENSION);
+    add_edge(0, 45, SUSPENSION);
+    add_edge(0, 46, SUSPENSION);
+    add_edge(0, 47, SUSPENSION);
+
+    //back wheels
+    add_edge(2, 4, SUSPENSION1);
+    add_edge(2, 6, SUSPENSION1);
+    add_edge(2, 7, SUSPENSION1);
+    add_edge(2, 8, SUSPENSION1);
+    add_edge(2, 9, SUSPENSION1);
+    add_edge(2, 15, SUSPENSION1);
+    add_edge(2, 17, SUSPENSION1);
+
+    add_edge(2, 26, SUSPENSION);
+    add_edge(2, 27, SUSPENSION);
+    add_edge(2, 28, SUSPENSION);
+    add_edge(2, 29, SUSPENSION);
+    add_edge(2, 30, SUSPENSION);
+    add_edge(2, 37, SUSPENSION);
+    add_edge(2, 39, SUSPENSION);
+    
+    add_edge(3, 4, SUSPENSION);
+    add_edge(3, 6, SUSPENSION);
+    add_edge(3, 7, SUSPENSION);
+    add_edge(3, 8, SUSPENSION);
+    add_edge(3, 9, SUSPENSION);
+    add_edge(3, 15, SUSPENSION);
+    add_edge(3, 17, SUSPENSION);
+
+    add_edge(3, 26, SUSPENSION1);
+    add_edge(3, 27, SUSPENSION1);
+    add_edge(3, 28, SUSPENSION1);
+    add_edge(3, 29, SUSPENSION1);
+    add_edge(3, 30, SUSPENSION1);
+    add_edge(3, 37, SUSPENSION1);
+    add_edge(3, 39, SUSPENSION1);
 }
 
 void graph::update()
 {
+    for(int i = 0; i < 4; i++)
+    {
+        nodes[i].position.y += 0.001*cos(0.001*SDL_GetTicks());
+    }
+    
+
 
 }
 
@@ -556,41 +581,71 @@ void graph::send_points_and_edges_to_gpu()
   points.clear();
   colors.clear();
 
-  for(auto n : nodes)
+  //for(auto n : nodes)
+  //{
+    //points.push_back(glm::vec3(n.position));
+    //if(n.anchored)
+      //colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
+    //else
+      //colors.push_back(glm::vec4(1.0, 1.0, 0.75, 1.0));
+  //}
+ 
+
+
+    #define CHASSIS_COLOR       glm::vec4(0.618,0.618,0.618,1.0)
+    #define CHASSIS_NODE_COLOR  glm::vec4(0.6,0.6,0.6,1.0)
+    #define SUSPENSION_COLOR    glm::vec4(0.7,0.4,0.1,0.5)
+    #define SUSPENSION1_COLOR   glm::vec4(0.4,0.3,0.5,0.3) 
+  nodes_start = points.size();
+  for(uint i = 0; i < nodes.size(); i++)
   {
-    points.push_back(glm::vec3(n.position));
-    if(n.anchored)
+    points.push_back(glm::vec3(nodes[i].position));
+
+    if(nodes[i].anchored)
       colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
     else
-      colors.push_back(glm::vec4(1.0, 1.0, 0.75, 1.0));
+        if(i == highlight_index)
+            colors.push_back(glm::vec4(1.0, 0.0, 0.2, 1.0)); 
+        else
+            colors.push_back(CHASSIS_NODE_COLOR);
   }
+  nodes_num = points.size() - nodes_start;
 
-  num_nodes_to_draw = points.size();
-
+  chassis_start = points.size();
   for(auto e : edges)
   {
-    points.push_back(glm::vec3(nodes[e.node1].position));
-    points.push_back(glm::vec3(nodes[e.node2].position));
-
     if(e.type == CHASSIS)
     {
-      colors.push_back(glm::vec4(0.3,0.3,0.18,1));
-      colors.push_back(glm::vec4(0.3,0.3,0.18,1));
+        points.push_back(glm::vec3(nodes[e.node1].position));
+        points.push_back(glm::vec3(nodes[e.node2].position));
+      
+        colors.push_back(CHASSIS_COLOR);
+        colors.push_back(CHASSIS_COLOR);
     }
-    else if(e.type == SUSPENSION)
+  }
+  chassis_num = points.size() - chassis_start;
+
+  suspension_start = points.size();
+  for(auto e : edges)
+  {
+    if(e.type == SUSPENSION)
     {
-      colors.push_back(glm::vec4(0.5,1,0,1));
-      colors.push_back(glm::vec4(0.5,1,0,1));
+        points.push_back(glm::vec3(nodes[e.node1].position));
+        points.push_back(glm::vec3(nodes[e.node2].position));
+
+        colors.push_back(SUSPENSION_COLOR);
+        colors.push_back(SUSPENSION_COLOR);
     }
     else if(e.type == SUSPENSION1)
     {
-      colors.push_back(glm::vec4(1,0,1,1));
-      colors.push_back(glm::vec4(1,0,1,1));
+        points.push_back(glm::vec3(nodes[e.node1].position));
+        points.push_back(glm::vec3(nodes[e.node2].position));
+
+        colors.push_back(SUSPENSION1_COLOR);
+        colors.push_back(SUSPENSION1_COLOR);
     }
   }
-
-
-  num_edges_to_draw = points.size() - num_nodes_to_draw;
+  suspension_num = points.size() - suspension_start;
 
   num_bytes_points = points.size() * sizeof(glm::vec3);
   num_bytes_colors = colors.size() * sizeof(glm::vec4);
@@ -605,6 +660,7 @@ void graph::send_points_and_edges_to_gpu()
 void graph::display()
 {
     //do your update
+    update();
 
     //send your points
     send_points_and_edges_to_gpu();
@@ -613,9 +669,11 @@ void graph::display()
     glEnable(GL_DEPTH_TEST);
 
     // cout << "drawing " << num_nodes_to_draw << " points" << endl;
-    glPointSize(5.0f);
-    glDrawArrays(GL_POINTS, 0, num_nodes_to_draw);
+    glPointSize(6.0f);
+    glDrawArrays(GL_POINTS, nodes_start, nodes_num);
 
-    glLineWidth(2.0f);
-    glDrawArrays(GL_LINES, num_nodes_to_draw, num_edges_to_draw);
+    glLineWidth(3.0f);
+    glDrawArrays(GL_LINES, suspension_start, suspension_num);
+    glLineWidth(6.0f);
+    glDrawArrays(GL_LINES, chassis_start, chassis_num);
 }

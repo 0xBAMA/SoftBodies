@@ -144,10 +144,14 @@ int main(int, char**)
                     g.set_rotate_theta(theta);
                 }
 
-                // if(event.key.keysym.sym == SDLK_a)
-                //
-                // if(event.key.keysym.sym == SDLK_s)
-                //
+                static int index = 0;
+                if(event.key.keysym.sym == SDLK_a)
+                {index++; g.set_highlight_index(index); cout << index << endl;}
+
+                if(event.key.keysym.sym == SDLK_s)
+                {index--; g.set_highlight_index(index); cout << index << endl;}
+                
+
                 // if(event.key.keysym.sym == SDLK_z)
                 //
                 // if(event.key.keysym.sym == SDLK_x)
@@ -166,6 +170,7 @@ int main(int, char**)
         static float timescale = 0.0f;
         static float gravity = 10.0f;
         static float noise_scale = 1.0f;
+        static float noise_speed = 1.0f;
         static bool run_simulation = false;
         static bool show_controls = true;
         static bool instruction_window = true;
@@ -201,6 +206,8 @@ int main(int, char**)
         ImGui::SliderFloat("gravity", &gravity, -5.0f, 10.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("noise scale", &noise_scale, 0, 5.0f);
+        ImGui::SetCursorPosX(20);
+        ImGui::SliderFloat("noise speed", &noise_speed, 0, 5.0f);
 
         static float chassis_k;
         static float chassis_damp;
