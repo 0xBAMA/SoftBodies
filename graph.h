@@ -73,6 +73,7 @@ enum edgetype
 {
     CHASSIS,
     SUSPENSION,
+    SUSPENSION1,
     TIRE
 };
 
@@ -144,7 +145,6 @@ class graph
 
           float AR = total_screen_width/total_screen_height;
 
-          cout << "ar is " << AR << endl;
           glUniform1fv(glGetUniformLocation(shader, "aspect_ratio"), 1, &AR);
         }
 
@@ -164,6 +164,7 @@ class graph
         }
 
     private:
+
         //OpenGL Data
         GLuint vao;
         GLuint buffer;
@@ -255,242 +256,290 @@ void graph::load_frame_points()
   #define CHASSIS_SCALE 0.3
     //lead with 4 anchor points
 
+  #define WIDTH 0.2
+  #define VERTICAL 0.1
   //come back to this, need to be able to visualize the rest of the points before I figure this part out
-  add_node(0, glm::dvec3(0,0,0), true);
-  add_node(0, glm::dvec3(0,0,0), true);
-  add_node(0, glm::dvec3(0,0,0), true);
-  add_node(0, glm::dvec3(0,0,0), true);
-
+  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), true);
+  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), true);
+  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), true);
+  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), true);
 
 
     //then all the chassis nodes
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.839666, -1.224873), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.839666, -1.224873), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.839666, -1.224873), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.839666, -1.224873), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.043335, -1.919456), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.541155, 0.049640, -2.444495), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.353912, -1.295972), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.496110, -0.402032), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.998272, -0.418518), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.976395, 0.314427), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.514985, 0.336304), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.504047, 0.336304), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.478702, 0.762898), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.726352, 0.008355, -0.216081), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.019293, 0.806651), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.204942, 0.057377), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.188535, 0.823059), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.090392, 1.080109), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.210787, 0.976395, 0.440218), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.336924, 0.531393, 0.620700), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.091695, -0.177597, 0.697268), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.534656, 0.489640, 1.424666), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.234896, 0.456826, 1.457481), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.231663, 0.161491, 1.900483), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.090392, 1.080109), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.336924, 0.531393, 0.620700), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.043335, -1.919456), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.541155, 0.049640, -2.444495), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.353912, -1.295972), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.496110, -0.402032), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.998272, -0.418518), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.976395, 0.314427), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.514985, 0.336304), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.504047, 0.336304), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.478702, 0.762898), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.726352, 0.008355, -0.216081), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.019293, 0.806651), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.204942, 0.057377), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.188535, 0.823059), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.090392, 1.080109), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.210787, 0.976395, 0.440218), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.091695, -0.177597, 0.697268), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.534656, 0.489640, 1.424666), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.234896, 0.456826, 1.457481), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.231663, 0.161491, 1.900483), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.090392, 1.080109), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.194168, 0.998272, -0.527854), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.194168, 0.998272, -0.527854), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.203158, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.194168, 0.839666, -1.224873), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.203158, 0.530926, -1.695220), false);
-  add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.194168, 0.839666, -1.224873), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.203593, -1.521659), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.679409, -0.827076), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.370669, -1.297424), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.335853, -0.004235), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.838015, -0.020722), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.193655, -0.898175), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.541155, -0.110617, -2.046698), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.582503, 0.816138, 0.712224), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.354728, 0.734101), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.722724, 0.343790, 0.734101), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, 0.318445, 1.160695), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.726352, -0.151903, 0.181716), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.140964, 1.204448), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.365200, 0.455174), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.348792, 1.220856), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.210787, 0.816138, 0.838015), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.336924, 0.371136, 1.018497), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.091695, -0.337854, 1.095065), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.534656, 0.329383, 1.822463), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.234896, 0.296568, 1.855278), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.231663, 0.001234, 2.298280), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.609475, -0.069865, 1.477906), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.203593, -1.521659), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.370669, -1.297424), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.335853, -0.004235), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.838015, -0.020722), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.193655, -0.898175), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.679409, -0.827076), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.541155, -0.110617, -2.046698), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.582503, 0.816138, 0.712224), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.354728, 0.734101), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.722724, 0.343790, 0.734101), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, 0.318445, 1.160695), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.726352, -0.151903, 0.181716), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.140964, 1.204448), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.365200, 0.455174), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.348792, 1.220856), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.609475, -0.069865, 1.477906), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.210787, 0.816138, 0.838015), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.336924, 0.371136, 1.018497), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.091695, -0.337854, 1.095065), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.534656, 0.329383, 1.822463), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.234896, 0.296568, 1.855278), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.231663, 0.001234, 2.298280), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.194168, 0.838015, -0.130058), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.194168, 0.838015, -0.130058), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.203158, 0.370669, -1.297424), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.203158, 0.370669, -1.297424), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( 0.194168, 0.679409, -0.827076), false);
+    add_node(CHASSIS_NODE_MASS, CHASSIS_SCALE*glm::dvec3( -0.194168, 0.679409, -0.827076), false);
 
-  #define OFFSET 3
-  add_edge(43+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(21+OFFSET, 24+OFFSET, CHASSIS);
-  add_edge(20+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(42+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(33+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 25+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(25+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(32+OFFSET, 53+OFFSET, CHASSIS);
-  add_edge(10+OFFSET, 55+OFFSET, CHASSIS);
-  add_edge(10+OFFSET, 6+OFFSET, CHASSIS);
-  add_edge(32+OFFSET, 55+OFFSET, CHASSIS);
-  add_edge(10+OFFSET, 53+OFFSET, CHASSIS);
-  add_edge(53+OFFSET, 54+OFFSET, CHASSIS);
-  add_edge(55+OFFSET, 56+OFFSET, CHASSIS);
-  add_edge(56+OFFSET, 54+OFFSET, CHASSIS);
-  add_edge(1+OFFSET, 56+OFFSET, CHASSIS);
-  add_edge(55+OFFSET, 53+OFFSET, CHASSIS);
-  add_edge(4+OFFSET, 55+OFFSET, CHASSIS);
-  add_edge(22+OFFSET, 44+OFFSET, CHASSIS);
-  add_edge(25+OFFSET, 28+OFFSET, CHASSIS);
-  add_edge(46+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(28+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(25+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(22+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(50+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 34+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 34+OFFSET, CHASSIS);
-  add_edge(1+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(54+OFFSET, 5+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 5+OFFSET, CHASSIS);
-  add_edge(18+OFFSET, 40+OFFSET, CHASSIS);
-  add_edge(4+OFFSET, 32+OFFSET, CHASSIS);
-  add_edge(1+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(33+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 31+OFFSET, CHASSIS);
-  add_edge(9+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(10+OFFSET, 31+OFFSET, CHASSIS);
-  add_edge(9+OFFSET, 32+OFFSET, CHASSIS);
-  add_edge(9+OFFSET, 31+OFFSET, CHASSIS);
-  add_edge(53+OFFSET, 6+OFFSET, CHASSIS);
-  add_edge(10+OFFSET, 32+OFFSET, CHASSIS);
-  add_edge(34+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(5+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(1+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(33+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(20+OFFSET, 35+OFFSET, CHASSIS);
-  add_edge(13+OFFSET, 42+OFFSET, CHASSIS);
-  add_edge(20+OFFSET, 42+OFFSET, CHASSIS);
-  add_edge(25+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(42+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(43+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(20+OFFSET, 25+OFFSET, CHASSIS);
-  add_edge(21+OFFSET, 25+OFFSET, CHASSIS);
-  add_edge(35+OFFSET, 45+OFFSET, CHASSIS);
-  add_edge(13+OFFSET, 23+OFFSET, CHASSIS);
-  add_edge(14+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(36+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(23+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(45+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(45+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(23+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(52+OFFSET, 51+OFFSET, CHASSIS);
-  add_edge(13+OFFSET, 52+OFFSET, CHASSIS);
-  add_edge(51+OFFSET, 35+OFFSET, CHASSIS);
-  add_edge(23+OFFSET, 45+OFFSET, CHASSIS);
-  add_edge(27+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(28+OFFSET, 48+OFFSET, CHASSIS);
-  add_edge(28+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(27+OFFSET, 48+OFFSET, CHASSIS);
-  add_edge(24+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(24+OFFSET, 27+OFFSET, CHASSIS);
-  add_edge(30+OFFSET, 48+OFFSET, CHASSIS);
-  add_edge(38+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(39+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(44+OFFSET, 47+OFFSET, CHASSIS);
-  add_edge(47+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(44+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(24+OFFSET, 48+OFFSET, CHASSIS);
-  add_edge(48+OFFSET, 50+OFFSET, CHASSIS);
-  add_edge(44+OFFSET, 50+OFFSET, CHASSIS);
-  add_edge(48+OFFSET, 49+OFFSET, CHASSIS);
-  add_edge(47+OFFSET, 48+OFFSET, CHASSIS);
-  add_edge(39+OFFSET, 47+OFFSET, CHASSIS);
-  add_edge(30+OFFSET, 46+OFFSET, CHASSIS);
-  add_edge(45+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(36+OFFSET, 45+OFFSET, CHASSIS);
-  add_edge(39+OFFSET, 41+OFFSET, CHASSIS);
-  add_edge(36+OFFSET, 39+OFFSET, CHASSIS);
-  add_edge(41+OFFSET, 44+OFFSET, CHASSIS);
-  add_edge(39+OFFSET, 44+OFFSET, CHASSIS);
-  add_edge(43+OFFSET, 44+OFFSET, CHASSIS);
-  add_edge(42+OFFSET, 43+OFFSET, CHASSIS);
-  add_edge(41+OFFSET, 43+OFFSET, CHASSIS);
-  add_edge(40+OFFSET, 42+OFFSET, CHASSIS);
-  add_edge(41+OFFSET, 42+OFFSET, CHASSIS);
-  add_edge(40+OFFSET, 41+OFFSET, CHASSIS);
-  add_edge(38+OFFSET, 41+OFFSET, CHASSIS);
-  add_edge(33+OFFSET, 40+OFFSET, CHASSIS);
-  add_edge(34+OFFSET, 40+OFFSET, CHASSIS);
-  add_edge(38+OFFSET, 40+OFFSET, CHASSIS);
-  add_edge(34+OFFSET, 37+OFFSET, CHASSIS);
-  add_edge(38+OFFSET, 39+OFFSET, CHASSIS);
-  add_edge(37+OFFSET, 38+OFFSET, CHASSIS);
-  add_edge(36+OFFSET, 37+OFFSET, CHASSIS);
-  add_edge(35+OFFSET, 36+OFFSET, CHASSIS);
-  add_edge(31+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(6+OFFSET, 32+OFFSET, CHASSIS);
-  add_edge(35+OFFSET, 34+OFFSET, CHASSIS);
-  add_edge(8+OFFSET, 35+OFFSET, CHASSIS);
-  add_edge(34+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(8+OFFSET, 33+OFFSET, CHASSIS);
-  add_edge(34+OFFSET, 8+OFFSET, CHASSIS);
-  add_edge(33+OFFSET, 7+OFFSET, CHASSIS);
-  add_edge(6+OFFSET, 31+OFFSET, CHASSIS);
-  add_edge(31+OFFSET, 32+OFFSET, CHASSIS);
-  add_edge(16+OFFSET, 24+OFFSET, CHASSIS);
-  add_edge(17+OFFSET, 24+OFFSET, CHASSIS);
-  add_edge(22+OFFSET, 26+OFFSET, CHASSIS);
-  add_edge(26+OFFSET, 28+OFFSET, CHASSIS);
-  add_edge(22+OFFSET, 28+OFFSET, CHASSIS);
-  add_edge(27+OFFSET, 30+OFFSET, CHASSIS);
-  add_edge(27+OFFSET, 29+OFFSET, CHASSIS);
-  add_edge(22+OFFSET, 29+OFFSET, CHASSIS);
-  add_edge(27+OFFSET, 28+OFFSET, CHASSIS);
-  add_edge(26+OFFSET, 27+OFFSET, CHASSIS);
-  add_edge(17+OFFSET, 26+OFFSET, CHASSIS);
-  add_edge(24+OFFSET, 25+OFFSET, CHASSIS);
-  add_edge(23+OFFSET, 24+OFFSET, CHASSIS);
-  add_edge(14+OFFSET, 23+OFFSET, CHASSIS);
-  add_edge(17+OFFSET, 19+OFFSET, CHASSIS);
-  add_edge(14+OFFSET, 17+OFFSET, CHASSIS);
-  add_edge(19+OFFSET, 22+OFFSET, CHASSIS);
-  add_edge(17+OFFSET, 22+OFFSET, CHASSIS);
-  add_edge(21+OFFSET, 22+OFFSET, CHASSIS);
-  add_edge(20+OFFSET, 21+OFFSET, CHASSIS);
-  add_edge(19+OFFSET, 21+OFFSET, CHASSIS);
-  add_edge(18+OFFSET, 20+OFFSET, CHASSIS);
-  add_edge(19+OFFSET, 20+OFFSET, CHASSIS);
-  add_edge(18+OFFSET, 19+OFFSET, CHASSIS);
-  add_edge(16+OFFSET, 19+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 18+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 18+OFFSET, CHASSIS);
-  add_edge(16+OFFSET, 18+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 15+OFFSET, CHASSIS);
-  add_edge(16+OFFSET, 17+OFFSET, CHASSIS);
-  add_edge(15+OFFSET, 16+OFFSET, CHASSIS);
-  add_edge(14+OFFSET, 15+OFFSET, CHASSIS);
-  add_edge(13+OFFSET, 14+OFFSET, CHASSIS);
-  add_edge(9+OFFSET, 11+OFFSET, CHASSIS);
-  add_edge(4+OFFSET, 10+OFFSET, CHASSIS);
-  add_edge(13+OFFSET, 12+OFFSET, CHASSIS);
-  add_edge(2+OFFSET, 13+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 11+OFFSET, CHASSIS);
-  add_edge(2+OFFSET, 11+OFFSET, CHASSIS);
-  add_edge(12+OFFSET, 2+OFFSET, CHASSIS);
-  add_edge(11+OFFSET, 3+OFFSET, CHASSIS);
-  add_edge(4+OFFSET, 9+OFFSET, CHASSIS);
-  add_edge(9+OFFSET, 10+OFFSET, CHASSIS);
-  add_edge(2+OFFSET, 4+OFFSET, CHASSIS);
-  add_edge(1+OFFSET, 2+OFFSET, CHASSIS);
-  add_edge(3+OFFSET, 4+OFFSET, CHASSIS);
-  add_edge(5+OFFSET, 8+OFFSET, CHASSIS);
-  add_edge(7+OFFSET, 8+OFFSET, CHASSIS);
-  add_edge(6+OFFSET, 7+OFFSET, CHASSIS);
+    #define OFFSET 3
+    add_edge(1+OFFSET, 7+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 3+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 6+OFFSET, CHASSIS);
+    add_edge(5+OFFSET, 4+OFFSET, CHASSIS);
+    add_edge(1+OFFSET, 6+OFFSET, CHASSIS);
+    add_edge(5+OFFSET, 8+OFFSET, CHASSIS);
+    add_edge(8+OFFSET, 9+OFFSET, CHASSIS);
+    add_edge(9+OFFSET, 10+OFFSET, CHASSIS);
+    add_edge(10+OFFSET, 11+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 9+OFFSET, CHASSIS);
+    add_edge(10+OFFSET, 12+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 12+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 12+OFFSET, CHASSIS);
+    add_edge(10+OFFSET, 13+OFFSET, CHASSIS);
+    add_edge(12+OFFSET, 13+OFFSET, CHASSIS);
+    add_edge(13+OFFSET, 14+OFFSET, CHASSIS);
+    add_edge(12+OFFSET, 14+OFFSET, CHASSIS);
+    add_edge(13+OFFSET, 15+OFFSET, CHASSIS);
+    add_edge(14+OFFSET, 15+OFFSET, CHASSIS);
+    add_edge(8+OFFSET, 11+OFFSET, CHASSIS);
+    add_edge(11+OFFSET, 13+OFFSET, CHASSIS);
+    add_edge(8+OFFSET, 16+OFFSET, CHASSIS);
+    add_edge(16+OFFSET, 17+OFFSET, CHASSIS);
+    add_edge(17+OFFSET, 18+OFFSET, CHASSIS);
+    add_edge(11+OFFSET, 19+OFFSET, CHASSIS);
+    add_edge(19+OFFSET, 20+OFFSET, CHASSIS);
+    add_edge(20+OFFSET, 21+OFFSET, CHASSIS);
+    add_edge(20+OFFSET, 22+OFFSET, CHASSIS);
+    add_edge(20+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(19+OFFSET, 21+OFFSET, CHASSIS);
+    add_edge(11+OFFSET, 17+OFFSET, CHASSIS);
+    add_edge(10+OFFSET, 17+OFFSET, CHASSIS);
+    add_edge(23+OFFSET, 29+OFFSET, CHASSIS);
+    add_edge(24+OFFSET, 23+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 28+OFFSET, CHASSIS);
+    add_edge(28+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(28+OFFSET, 26+OFFSET, CHASSIS);
+    add_edge(26+OFFSET, 25+OFFSET, CHASSIS);
+    add_edge(24+OFFSET, 29+OFFSET, CHASSIS);
+    add_edge(23+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(26+OFFSET, 30+OFFSET, CHASSIS);
+    add_edge(30+OFFSET, 31+OFFSET, CHASSIS);
+    add_edge(31+OFFSET, 32+OFFSET, CHASSIS);
+    add_edge(32+OFFSET, 33+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 31+OFFSET, CHASSIS);
+    add_edge(32+OFFSET, 34+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 34+OFFSET, CHASSIS);
+    add_edge(27+OFFSET, 34+OFFSET, CHASSIS);
+    add_edge(32+OFFSET, 35+OFFSET, CHASSIS);
+    add_edge(34+OFFSET, 35+OFFSET, CHASSIS);
+    add_edge(35+OFFSET, 36+OFFSET, CHASSIS);
+    add_edge(34+OFFSET, 36+OFFSET, CHASSIS);
+    add_edge(35+OFFSET, 37+OFFSET, CHASSIS);
+    add_edge(36+OFFSET, 37+OFFSET, CHASSIS);
+    add_edge(37+OFFSET, 38+OFFSET, CHASSIS);
+    add_edge(33+OFFSET, 38+OFFSET, CHASSIS);
+    add_edge(35+OFFSET, 38+OFFSET, CHASSIS);
+    add_edge(30+OFFSET, 33+OFFSET, CHASSIS);
+    add_edge(33+OFFSET, 35+OFFSET, CHASSIS);
+    add_edge(30+OFFSET, 39+OFFSET, CHASSIS);
+    add_edge(39+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(40+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(33+OFFSET, 42+OFFSET, CHASSIS);
+    add_edge(42+OFFSET, 43+OFFSET, CHASSIS);
+    add_edge(43+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(17+OFFSET, 43+OFFSET, CHASSIS);
+    add_edge(38+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(42+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(38+OFFSET, 42+OFFSET, CHASSIS);
+    add_edge(33+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(32+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(40+OFFSET, 43+OFFSET, CHASSIS);
+    add_edge(17+OFFSET, 20+OFFSET, CHASSIS);
+    add_edge(17+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(20+OFFSET, 43+OFFSET, CHASSIS);
+    add_edge(21+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(21+OFFSET, 43+OFFSET, CHASSIS);
+    add_edge(20+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(16+OFFSET, 39+OFFSET, CHASSIS);
+    add_edge(46+OFFSET, 26+OFFSET, CHASSIS);
+    add_edge(5+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(45+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(16+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(39+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(39+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(16+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(30+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(8+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(5+OFFSET, 16+OFFSET, CHASSIS);
+    add_edge(26+OFFSET, 39+OFFSET, CHASSIS);
+    add_edge(15+OFFSET, 18+OFFSET, CHASSIS);
+    add_edge(14+OFFSET, 18+OFFSET, CHASSIS);
+    add_edge(37+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(36+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(18+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(14+OFFSET, 36+OFFSET, CHASSIS);
+    add_edge(5+OFFSET, 36+OFFSET, CHASSIS);
+    add_edge(14+OFFSET, 26+OFFSET, CHASSIS);
+    add_edge(27+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(7+OFFSET, 29+OFFSET, CHASSIS);
+    add_edge(48+OFFSET, 24+OFFSET, CHASSIS);
+    add_edge(1+OFFSET, 23+OFFSET, CHASSIS);
+    add_edge(1+OFFSET, 29+OFFSET, CHASSIS);
+    add_edge(7+OFFSET, 23+OFFSET, CHASSIS);
+    add_edge(1+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 23+OFFSET, CHASSIS);
+    add_edge(27+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(12+OFFSET, 34+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 25+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 25+OFFSET, CHASSIS);
+    add_edge(18+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(21+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(41+OFFSET, 44+OFFSET, CHASSIS);
+    add_edge(18+OFFSET, 21+OFFSET, CHASSIS);
+    add_edge(47+OFFSET, 48+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 49+OFFSET, CHASSIS);
+    add_edge(49+OFFSET, 50+OFFSET, CHASSIS);
+    add_edge(47+OFFSET, 49+OFFSET, CHASSIS);
+    add_edge(48+OFFSET, 50+OFFSET, CHASSIS);
+    add_edge(7+OFFSET, 48+OFFSET, CHASSIS);
+    add_edge(29+OFFSET, 47+OFFSET, CHASSIS);
+    add_edge(7+OFFSET, 24+OFFSET, CHASSIS);
+    add_edge(7+OFFSET, 47+OFFSET, CHASSIS);
+    add_edge(29+OFFSET, 48+OFFSET, CHASSIS);
+    add_edge(18+OFFSET, 27+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 18+OFFSET, CHASSIS);
+    add_edge(27+OFFSET, 41+OFFSET, CHASSIS);
+    add_edge(36+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(14+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(15+OFFSET, 17+OFFSET, CHASSIS);
+    add_edge(37+OFFSET, 40+OFFSET, CHASSIS);
+    add_edge(3+OFFSET, 1+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 3+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 2+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 6+OFFSET, CHASSIS);
+    add_edge(2+OFFSET, 5+OFFSET, CHASSIS);
+    add_edge(3+OFFSET, 7+OFFSET, CHASSIS);
+    add_edge(15+OFFSET, 22+OFFSET, CHASSIS);
+    add_edge(11+OFFSET, 22+OFFSET, CHASSIS);
+    add_edge(13+OFFSET, 22+OFFSET, CHASSIS);
+    add_edge(22+OFFSET, 21+OFFSET, CHASSIS);
+    add_edge(22+OFFSET, 19+OFFSET, CHASSIS);
+    add_edge(28+OFFSET, 24+OFFSET, CHASSIS);
+    add_edge(27+OFFSET, 24+OFFSET, CHASSIS);
+    add_edge(43+OFFSET, 38+OFFSET, CHASSIS);
+    add_edge(28+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(3+OFFSET, 29+OFFSET, CHASSIS);
+    add_edge(6+OFFSET, 28+OFFSET, CHASSIS);
+    add_edge(50+OFFSET, 28+OFFSET, CHASSIS);
+    add_edge(38+OFFSET, 46+OFFSET, CHASSIS);
+    add_edge(22+OFFSET, 45+OFFSET, CHASSIS);
+    add_edge(22+OFFSET, 38+OFFSET, CHASSIS);
+    add_edge(3+OFFSET, 47+OFFSET, CHASSIS);
+
+
+  // //suspension linkages
+  // add_edge(0, 1, SUSPENSION);
+  // add_edge(0, 2, SUSPENSION1);
+  // add_edge(0, 3, SUSPENSION1);
+  // add_edge(0, 4, SUSPENSION1);
+  // add_edge(0, 5, SUSPENSION1);
+  // add_edge(0, 6, SUSPENSION1);
+  // add_edge(0, 7, SUSPENSION1);
+  // add_edge(0, 8, SUSPENSION1);
+  // add_edge(0, 9, SUSPENSION1);
+  // add_edge(0, 10, SUSPENSION1);
+  // add_edge(0, 11, SUSPENSION1);
+  // add_edge(0, 12, SUSPENSION1);
+  // add_edge(0, 13, SUSPENSION1);
+  // add_edge(0, 14, SUSPENSION1);
+  // add_edge(0, 15, SUSPENSION1);
+  // add_edge(0, 16, SUSPENSION1);
+  // add_edge(0, 17, SUSPENSION1);
+  // add_edge(0, 18, SUSPENSION1);
+  // add_edge(0, 19, SUSPENSION1);
+  // add_edge(0, 20, SUSPENSION1);
+  // add_edge(0, 21, SUSPENSION1);
+  // add_edge(0, 22, SUSPENSION1);
+  // add_edge(0, 23, SUSPENSION1);
+  // add_edge(0, 24, SUSPENSION1);
+  // add_edge(0, 25, SUSPENSION1);
+  // add_edge(0, 26, SUSPENSION1);
+  // add_edge(0, 27, SUSPENSION1);
+  // add_edge(0, 28, SUSPENSION1);
+  // add_edge(0, 29, SUSPENSION1);
+  // add_edge(0, 30, SUSPENSION1);
+  // add_edge(0, 31, SUSPENSION1);
+  // add_edge(0, 32, SUSPENSION1);
+  // add_edge(0, 33, SUSPENSION1);
+  // add_edge(0, 34, SUSPENSION1);
+  // add_edge(0, 35, SUSPENSION1);
+  // add_edge(0, 36, SUSPENSION1);
+  // add_edge(0, 37, SUSPENSION1);
+  // add_edge(0, 38, SUSPENSION1);
+  // add_edge(0, 39, SUSPENSION1);
+  // add_edge(0, 40, SUSPENSION1);
+  // add_edge(0, 41, SUSPENSION1);
+  // add_edge(0, 42, SUSPENSION1);
+  // add_edge(0, 43, SUSPENSION1);
+  // add_edge(0, 44, SUSPENSION1);
+  // add_edge(0, 45, SUSPENSION1);
+  // add_edge(0, 46, SUSPENSION1);
+  // add_edge(0, 47, SUSPENSION1);
+  // add_edge(0, 48, SUSPENSION1);
+  // add_edge(0, 49, SUSPENSION1);
+  // add_edge(0, 50, SUSPENSION1);
+  // add_edge(0, 51, SUSPENSION1);
+  // add_edge(0, 52, SUSPENSION1);
+  // add_edge(0, 53, SUSPENSION1);
+  // add_edge(0, 54, SUSPENSION1);
+
+
 }
 
 void graph::update()
@@ -510,7 +559,10 @@ void graph::send_points_and_edges_to_gpu()
   for(auto n : nodes)
   {
     points.push_back(glm::vec3(n.position));
-    colors.push_back(glm::vec4(1.0, 1.0, 1.0, 1.0));
+    if(n.anchored)
+      colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
+    else
+      colors.push_back(glm::vec4(1.0, 1.0, 0.75, 1.0));
   }
 
   num_nodes_to_draw = points.size();
@@ -522,15 +574,21 @@ void graph::send_points_and_edges_to_gpu()
 
     if(e.type == CHASSIS)
     {
-      colors.push_back(glm::vec4(1,0.5,0,0));
-      colors.push_back(glm::vec4(1,0.5,0,0));
+      colors.push_back(glm::vec4(0.3,0.3,0.18,1));
+      colors.push_back(glm::vec4(0.3,0.3,0.18,1));
     }
-    else
+    else if(e.type == SUSPENSION)
     {
-      colors.push_back(glm::vec4(0,0,0,0));
-      colors.push_back(glm::vec4(0,1,0,0));
+      colors.push_back(glm::vec4(0.5,1,0,1));
+      colors.push_back(glm::vec4(0.5,1,0,1));
+    }
+    else if(e.type == SUSPENSION1)
+    {
+      colors.push_back(glm::vec4(1,0,1,1));
+      colors.push_back(glm::vec4(1,0,1,1));
     }
   }
+
 
   num_edges_to_draw = points.size() - num_nodes_to_draw;
 

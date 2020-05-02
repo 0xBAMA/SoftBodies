@@ -143,6 +143,17 @@ int main(int, char**)
                     theta -= 0.1;
                     g.set_rotate_theta(theta);
                 }
+
+                // if(event.key.keysym.sym == SDLK_a)
+                //
+                // if(event.key.keysym.sym == SDLK_s)
+                //
+                // if(event.key.keysym.sym == SDLK_z)
+                //
+                // if(event.key.keysym.sym == SDLK_x)
+                //
+
+
             }
         }
 
@@ -242,8 +253,6 @@ int main(int, char**)
 
 
 
-
-
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
         ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -263,6 +272,7 @@ int main(int, char**)
             ImGui::Text("  Up/Down    - rotate up and down");
             ImGui::Text(" ");
             ImGui::Text("  pageup/pagedown - zoom in and out");
+
 
 
 
