@@ -41,6 +41,12 @@ int main(int, char**)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1); 
+    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 8);
+
+
+
+
 
     // Create window with graphics context
     //
@@ -125,22 +131,22 @@ int main(int, char**)
             {
                 if(event.key.keysym.sym == SDLK_RIGHT)
                 {
-                    phi += 0.1;
+                    phi += 0.01;
                     g.set_rotate_phi(phi);
                 }
                 if(event.key.keysym.sym == SDLK_LEFT)
                 {
-                    phi -= 0.1;
+                    phi -= 0.01;
                     g.set_rotate_phi(phi);
                 }
                 if(event.key.keysym.sym == SDLK_UP)
                 {
-                    theta += 0.1;
+                    theta += 0.01;
                     g.set_rotate_theta(theta);
                 }
                 if(event.key.keysym.sym == SDLK_DOWN)
                 {
-                    theta -= 0.1;
+                    theta -= 0.01;
                     g.set_rotate_theta(theta);
                 }
 
@@ -167,10 +173,6 @@ int main(int, char**)
         ImGui::NewFrame();
 
         //start control window
-        static float timescale = 0.0f;
-        static float gravity = 10.0f;
-        static float noise_scale = 1.0f;
-        static float noise_speed = 1.0f;
         static bool run_simulation = false;
         static bool show_controls = true;
         static bool instruction_window = true;
@@ -187,12 +189,14 @@ int main(int, char**)
         if(ImGui::Button("Single Step"))
         {
             //call the update function
+            g.update();
         }
 
         ImGui::SameLine();
         if(ImGui::Button("Reset"))
         {
             //call the reinit function
+            g.load_frame_points();
         }
 
         ImGui::Text(" ");
@@ -201,16 +205,13 @@ int main(int, char**)
         ImGui::Text("Simulation general settings");
         ImGui::Separator();
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("time step", &timescale, 0.0f, 0.1f);
+        ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.1f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("gravity", &gravity, -5.0f, 10.0f);
+        ImGui::SliderFloat("gravity", &g.gravity, -5.0f, 10.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise scale", &noise_scale, 0, 5.0f);
+        ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 5.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise speed", &noise_speed, 0, 5.0f);
-
-        static float chassis_k;
-        static float chassis_damp;
+        ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 5.0f);
 
         //static ImVec4 chassis_tension_color = {0x45,0x23,0x0,0xff};
         //static ImVec4 chassis_compression_color = {0x0,0x23,0x43,0xff};
@@ -226,14 +227,10 @@ int main(int, char**)
         //ImGui::ColorEdit4("compression", (float*)&chassis_compression_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis k", &chassis_k, 0.0f, 100.0f);
+        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 100.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis damp", &chassis_damp, 0.0f, 40.0f);
+        ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 40.0f);
 
-
-
-        static float suspension_k;
-        static float suspension_damp;
 
         //static ImVec4 suspension_tension_color = {0x11,0x45,0x2,0xff};
         //static ImVec4 suspension_compression_color = {0x45,0x0,0x53,0xff};
@@ -249,9 +246,9 @@ int main(int, char**)
         //ImGui::ColorEdit4("compression", (float*)&suspension_compression_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension k", &suspension_k, 0.0f, 100.0f);
+        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 100.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension damp", &suspension_damp, 0.0f, 40.0f);
+        ImGui::SliderFloat("suspension damp", &g.suspension_damp, 0.0f, 40.0f);
 
         ImGui::Text(" ");
         ImGui::Text(" ");
@@ -291,6 +288,9 @@ int main(int, char**)
         // Rendering
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(run_simulation)
+            g.update();
 
         g.display();
         ImGui::Render();

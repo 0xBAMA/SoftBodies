@@ -164,6 +164,22 @@ class graph
         }
 
         void set_highlight_index(int i) {highlight_index = i;}
+
+        //which set of colors to use?
+        void color_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),0);}
+        void tcolor_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),1);}
+
+        float timescale;
+        float gravity;
+        float noise_scale;
+        float noise_speed;
+
+        float chassis_k;
+        float chassis_damp;
+
+        float suspension_k;
+        float suspension_damp;
+
     private:
 
         //OpenGL Data
@@ -173,6 +189,7 @@ class graph
 
         int num_bytes_points;
         int num_bytes_colors;
+        int num_bytes_tcolors;
 
         int chassis_start, chassis_num;
         int suspension_start, suspension_num;
@@ -221,6 +238,9 @@ graph::graph()
 
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vColor"));
      glVertexAttribPointer(glGetAttribLocation(shader, "vColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (num_bytes_points)));
+
+     glEnableVertexAttribArray(glGetAttribLocation(shader, "vtColor"));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vtColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (num_bytes_points+num_bytes_colors)));
 }
 
 void graph::add_node(float mass, glm::dvec3 position, bool anchored)
@@ -565,10 +585,12 @@ void graph::update()
 {
     for(int i = 0; i < 4; i++)
     {
-        nodes[i].position.y += 0.001*cos(0.001*SDL_GetTicks());
+        nodes[i].position.y += 0.001*cos(0.015*SDL_GetTicks());
     }
     
 
+    //send your points
+    send_points_and_edges_to_gpu();
 
 }
 
@@ -577,9 +599,11 @@ void graph::send_points_and_edges_to_gpu()
   //using glBufferData to send the point data across
   std::vector<glm::vec3> points;
   std::vector<glm::vec4> colors;
+  std::vector<glm::vec4> tcolors;
 
   points.clear();
   colors.clear();
+  tcolors.clear();
 
   //for(auto n : nodes)
   //{
@@ -593,13 +617,14 @@ void graph::send_points_and_edges_to_gpu()
 
 
     #define CHASSIS_COLOR       glm::vec4(0.618,0.618,0.618,1.0)
-    #define CHASSIS_NODE_COLOR  glm::vec4(0.6,0.6,0.6,1.0)
-    #define SUSPENSION_COLOR    glm::vec4(0.7,0.4,0.1,0.5)
-    #define SUSPENSION1_COLOR   glm::vec4(0.4,0.3,0.5,0.3) 
+    #define CHASSIS_NODE_COLOR  glm::vec4(0.6,0.6,0.5,1.0)
+    #define SUSPENSION_COLOR    glm::vec4(0.5,0.4,0.2,0.5)
+    #define SUSPENSION1_COLOR   glm::vec4(0.3,0.2,0.3,0.3) 
   nodes_start = points.size();
   for(uint i = 0; i < nodes.size(); i++)
   {
     points.push_back(glm::vec3(nodes[i].position));
+    tcolors.push_back(glm::vec4(0.2,0.2,0.2,1.0));
 
     if(nodes[i].anchored)
       colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
@@ -618,7 +643,10 @@ void graph::send_points_and_edges_to_gpu()
     {
         points.push_back(glm::vec3(nodes[e.node1].position));
         points.push_back(glm::vec3(nodes[e.node2].position));
-      
+    
+        tcolors.push_back(glm::vec4(0.3,0.4,0.2,1.0));
+        tcolors.push_back(glm::vec4(0.3,0.4,0.2,1.0));
+
         colors.push_back(CHASSIS_COLOR);
         colors.push_back(CHASSIS_COLOR);
     }
@@ -635,6 +663,9 @@ void graph::send_points_and_edges_to_gpu()
 
         colors.push_back(SUSPENSION_COLOR);
         colors.push_back(SUSPENSION_COLOR);
+        
+        tcolors.push_back(glm::vec4(0.3,0.6,0.2,1.0));
+        tcolors.push_back(glm::vec4(0.3,0.6,0.2,1.0));
     }
     else if(e.type == SUSPENSION1)
     {
@@ -643,37 +674,50 @@ void graph::send_points_and_edges_to_gpu()
 
         colors.push_back(SUSPENSION1_COLOR);
         colors.push_back(SUSPENSION1_COLOR);
+        
+        tcolors.push_back(glm::vec4(0.5,0.6,0.2,1.0));
+        tcolors.push_back(glm::vec4(0.5,0.6,0.2,1.0));
     }
   }
   suspension_num = points.size() - suspension_start;
 
   num_bytes_points = points.size() * sizeof(glm::vec3);
   num_bytes_colors = colors.size() * sizeof(glm::vec4);
+  num_bytes_tcolors = tcolors.size() * sizeof(glm::vec4);
 
-  glBufferData(GL_ARRAY_BUFFER, num_bytes_points + num_bytes_colors, NULL, GL_DYNAMIC_DRAW);
-
-  glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes_points, &points[0]);
-  glBufferSubData(GL_ARRAY_BUFFER, num_bytes_points, num_bytes_colors, &colors[0]);
-
+    glBufferData(GL_ARRAY_BUFFER, num_bytes_points + num_bytes_colors + num_bytes_tcolors, NULL, GL_DYNAMIC_DRAW);
+    uint base = 0;
+    glBufferSubData(GL_ARRAY_BUFFER, base, num_bytes_points, &points[0]);
+    base += num_bytes_points;
+    glBufferSubData(GL_ARRAY_BUFFER, base, num_bytes_colors, &colors[0]);
+    base += num_bytes_colors;
+    glBufferSubData(GL_ARRAY_BUFFER, base, num_bytes_tcolors, &tcolors[0]);
 }
 
 void graph::display()
 {
-    //do your update
-    update();
-
-    //send your points
-    send_points_and_edges_to_gpu();
-
     //do your draw commands
     glEnable(GL_DEPTH_TEST);
 
-    // cout << "drawing " << num_nodes_to_draw << " points" << endl;
-    glPointSize(6.0f);
-    glDrawArrays(GL_POINTS, nodes_start, nodes_num);
-
+    //regular colors
+    color_mode();
     glLineWidth(3.0f);
     glDrawArrays(GL_LINES, suspension_start, suspension_num);
+
     glLineWidth(6.0f);
     glDrawArrays(GL_LINES, chassis_start, chassis_num);
+
+    //tension color
+    tcolor_mode();
+    glLineWidth(4.0f);
+    glDrawArrays(GL_LINES, suspension_start, suspension_num);
+    
+    glLineWidth(8.0f);
+    glDrawArrays(GL_LINES, chassis_start, chassis_num);
+    
+    
+    //chassis nodes
+    color_mode();
+    glPointSize(7.0f);
+    glDrawArrays(GL_POINTS, nodes_start, nodes_num);
 }

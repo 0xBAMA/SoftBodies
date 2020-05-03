@@ -2,6 +2,11 @@
 
 in vec3 vPosition;
 in vec4 vColor;
+in vec4 vtColor;
+
+//color mode = 0 is just use regular colors
+//color mode = 1 is to use the tension/compression colors 
+uniform int color_mode;
 
 uniform float theta;
 uniform float phi;
@@ -36,5 +41,13 @@ void main()
     gl_Position = vec4(position, 1.0);
     gl_Position.x /= aspect_ratio;
     // gl_Position *= perspective;
-    color = vColor;
+
+    if(color_mode == 0)
+    {
+        color = vColor;
+    }
+    else
+    {
+        color = vtColor;
+    }
 }
