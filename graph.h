@@ -667,7 +667,9 @@ void graph::update()
                 double spring_ratio = glm::distance(my_position, ur_position) / n.edges[i].base_length;
 
                 //spring force
-                force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
+                //force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
+                //should this be normalized or no?
+                force += -k * (my_position - ur_position) * (spring_ratio - 1);
 
                 //damping force
                 force -= d * n.old_velocity;
