@@ -163,6 +163,7 @@ int main(int, char**)
                 {index--; g.set_highlight_index(index); cout << index << endl;}
                 
 
+                //toggle simulation running every frame
                 if(event.key.keysym.sym == SDLK_SPACE)
                     run_simulation = !run_simulation;
                 
@@ -194,6 +195,7 @@ int main(int, char**)
         {
             //call the update function
             g.update();
+            g.send_points_and_edges_to_gpu();
         }
 
         ImGui::SameLine();
@@ -201,6 +203,7 @@ int main(int, char**)
         {
             //call the reinit function
             g.load_frame_points();
+            g.send_points_and_edges_to_gpu();
         }
 
         ImGui::Text(" ");
@@ -213,9 +216,9 @@ int main(int, char**)
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("gravity", &g.gravity, -5.0f, 10.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 5.0f);
+        ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 1.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 5.0f);
+        ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 2.0f);
 
         ImGui::Text(" ");
         ImGui::Separator();

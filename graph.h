@@ -171,8 +171,8 @@ class graph
 
         float timescale = 0.1f;
         float gravity = 10.0f;
-        float noise_scale = 0.230f;
-        float noise_speed = 0.377f;
+        float noise_scale = 0.088f;
+        float noise_speed = 0.255f;
 
         float chassis_k = 70.0f;
         float chassis_damp = 3.0f;
@@ -266,12 +266,20 @@ void graph::add_edge(int node1, int node2, edgetype type)
 {
   edge temp;
 
-  temp.node1 = node1;
-  temp.node2 = node2;
+  temp.base_length = glm::distance(nodes[node1].position, nodes[node2].position);
 
   temp.type = type;
 
+  temp.node1 = node1;
+  temp.node2 = node2;
+  nodes[node1].edges.push_back(temp);
+
   edges.push_back(temp);
+
+  temp.node1 = node2;
+  temp.node2 = node1;
+  nodes[node2].edges.push_back(temp);
+
 }
 
 void graph::load_frame_points()
@@ -286,10 +294,10 @@ void graph::load_frame_points()
   #define WIDTH 0.2
   #define VERTICAL 0.1
   //come back to this, need to be able to visualize the rest of the points before I figure this part out
-  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), false);
-  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), false);
-  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), false);
-  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), false);
+  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), true);
+  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), true);
+  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), true);
+  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), true);
 
 
     //then all the chassis nodes
@@ -603,14 +611,81 @@ void graph::update()
     glm::vec3 driver_rear_sample_point = offset -forward - sideways;
     glm::vec3 passenger_rear_sample_point = offset - forward + sideways;
 
-    nodes[0].position.y = nodes[0].old_position.y + noise_scale*(-0.5+p.noise(driver_front_sample_point.x, driver_front_sample_point.y, driver_front_sample_point.z));
-    nodes[1].position.y = nodes[1].old_position.y + noise_scale*(-0.5+p.noise(passenger_front_sample_point.x, passenger_front_sample_point.y, passenger_front_sample_point.z));
-    nodes[2].position.y = nodes[2].old_position.y + noise_scale*(-0.5+p.noise(driver_rear_sample_point.x, driver_rear_sample_point.y, driver_rear_sample_point.z));
-    nodes[3].position.y = nodes[3].old_position.y + noise_scale*(-0.5+p.noise(passenger_rear_sample_point.x, passenger_rear_sample_point.y, passenger_rear_sample_point.z));
+    //new anchor positions
+    nodes[0].position.y = nodes[0].old_position.y + noise_scale*(-0.7+p.noise(driver_front_sample_point.x, driver_front_sample_point.y, driver_front_sample_point.z));
+    nodes[1].position.y = nodes[1].old_position.y + noise_scale*(-0.7+p.noise(passenger_front_sample_point.x, passenger_front_sample_point.y, passenger_front_sample_point.z));
+    nodes[2].position.y = nodes[2].old_position.y + noise_scale*(-0.7+p.noise(driver_rear_sample_point.x, driver_rear_sample_point.y, driver_rear_sample_point.z));
+    nodes[3].position.y = nodes[3].old_position.y + noise_scale*(-0.7+p.noise(passenger_rear_sample_point.x, passenger_rear_sample_point.y, passenger_rear_sample_point.z));
 
 
+    //back up old positions and velocities for unanchored nodes
+    for(auto& n : nodes)
+    {
+        if(!n.anchored)
+        {
+            n.old_position = n.position;
+            n.old_velocity = n.velocity;
+        }
+    }
 
-    
+
+    for(auto& n : nodes)
+    {
+        if(!n.anchored)
+        {
+            glm::dvec3 force(0,0,0);
+            double k = 0;
+            double d = 0;
+
+            
+            //get your forces from all the connections - accumulate in force vector
+            for(uint i = 0; i < n.edges.size(); i++)
+            {
+                switch(n.edges[i].type)
+                {
+                    case CHASSIS:
+                        k = chassis_k;
+                        d = chassis_damp;
+                        break;
+                    case SUSPENSION:
+                    case SUSPENSION1:
+                        k = suspension_k;
+                        d = suspension_damp;
+                        break;
+                    case TIRE:
+                        //tbd
+                        break;
+                }
+                
+                //get positions of the two nodes involved
+                glm::dvec3 my_position = n.old_position;
+                glm::dvec3 ur_position = nodes[n.edges[i].node2].anchored ? 
+                    nodes[n.edges[i].node2].position :          //use 'new position' for anchored nodes (new_position is up to date)
+                    nodes[n.edges[i].node2].old_position;       //use old position for unanchored nodes (old value is what you use)
+
+                //less than 1 is shorter, greater than 1 is longer than base length
+                double spring_ratio = glm::distance(my_position, ur_position) / n.edges[i].base_length;
+
+                //spring force
+                force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
+
+                //damping force
+                force -= d * n.old_velocity;
+            }
+
+            //add gravity
+            force += (double)n.mass * glm::dvec3(0,-gravity,0);
+            
+            //get the resulting acceleration
+            glm::dvec3 acceleration = force/(double)n.mass;
+
+            //compute the new velocity
+            n.velocity = n.old_velocity + acceleration * (double)timescale;
+
+            //get the new position
+            n.position = n.old_position + n.velocity * (double)timescale;
+        }
+    }
 
     //send your points
     send_points_and_edges_to_gpu();
@@ -639,11 +714,17 @@ void graph::send_points_and_edges_to_gpu()
  
 
 
-    #define CHASSIS_NODE_COLOR  glm::vec4(0.461,0.411,0.356,1.0)
-    #define CHASSIS_COLOR       glm::vec4(0.461,0.411,0.356,1.0)
+    #define CHASSIS_NODE_COLOR  glm::vec4(0.36,0.350,0.305,1.0)
+    #define CHASSIS_COLOR       glm::vec4(0.400,0.400,0.320,1.0)
     #define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
     #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3) 
-    #define HIGHLIGHT_COLOR     glm::vec4(0.6,0.4,0.1,0.4)
+    #define HIGHLIGHT_COLOR     glm::vec4(0.1,0.2,0.1,0.4)
+    #define HIGHLIGHT_COLOR_B   glm::vec4(0.1,0.4,0.6,0.4)
+    //going to need to refine how this works in order to reflect the
+    //tension/compression in a more continuous way, some kind of
+    //gradient going on
+
+
   nodes_start = points.size();
   for(uint i = 0; i < nodes.size(); i++)
   {
@@ -651,7 +732,7 @@ void graph::send_points_and_edges_to_gpu()
     tcolors.push_back(glm::vec4(nodes[i].position, 1.0f));
 
     if(nodes[i].anchored)
-      colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
+      colors.push_back(glm::vec4(0.2, 0.6, 0.5, 1.0));
     else
         if(i == highlight_index)
             colors.push_back(glm::vec4(1.0, 0.0, 0.2, 1.0)); 
@@ -668,8 +749,8 @@ void graph::send_points_and_edges_to_gpu()
         points.push_back(glm::vec3(nodes[e.node1].position));
         points.push_back(glm::vec3(nodes[e.node2].position));
     
-        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
-        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
+        tcolors.push_back(HIGHLIGHT_COLOR);
+        tcolors.push_back(HIGHLIGHT_COLOR);
 
         colors.push_back(CHASSIS_COLOR);
         colors.push_back(CHASSIS_COLOR);
@@ -688,8 +769,8 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION_COLOR);
         colors.push_back(SUSPENSION_COLOR);
         
-        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
-        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
+        tcolors.push_back(HIGHLIGHT_COLOR_B);
+        tcolors.push_back(HIGHLIGHT_COLOR_B);
     }
     else if(e.type == SUSPENSION1)
     {
@@ -699,8 +780,8 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION1_COLOR);
         colors.push_back(SUSPENSION1_COLOR);
         
-        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
-        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
+        tcolors.push_back(HIGHLIGHT_COLOR_B);
+        tcolors.push_back(HIGHLIGHT_COLOR_B);
     }
   }
   suspension_num = points.size() - suspension_start;
