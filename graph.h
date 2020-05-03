@@ -169,16 +169,18 @@ class graph
         void color_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),0);}
         void tcolor_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),1);}
 
-        float timescale;
-        float gravity;
-        float noise_scale;
-        float noise_speed;
+        float timescale = 0.1f;
+        float gravity = 10.0f;
+        float noise_scale = 1.0f;
+        float noise_speed = 1.0f;
 
-        float chassis_k;
-        float chassis_damp;
+        float chassis_k = 70.0f;
+        float chassis_damp = 3.0f;
 
-        float suspension_k;
-        float suspension_damp;
+        float chassis_mass = 3.0f;
+
+        float suspension_k = 30.0f;
+        float suspension_damp = 1.22f;
 
     private:
 
@@ -616,15 +618,15 @@ void graph::send_points_and_edges_to_gpu()
  
 
 
-    #define CHASSIS_COLOR       glm::vec4(0.618,0.618,0.618,1.0)
-    #define CHASSIS_NODE_COLOR  glm::vec4(0.6,0.6,0.5,1.0)
-    #define SUSPENSION_COLOR    glm::vec4(0.5,0.4,0.2,0.5)
-    #define SUSPENSION1_COLOR   glm::vec4(0.3,0.2,0.3,0.3) 
+    #define CHASSIS_NODE_COLOR  glm::vec4(0.461,0.411,0.356,1.0)
+    #define CHASSIS_COLOR       glm::vec4(0.461,0.411,0.356,1.0)
+    #define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
+    #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3) 
   nodes_start = points.size();
   for(uint i = 0; i < nodes.size(); i++)
   {
     points.push_back(glm::vec3(nodes[i].position));
-    tcolors.push_back(glm::vec4(0.2,0.2,0.2,1.0));
+    tcolors.push_back(glm::vec4(nodes[i].position, 1.0f));
 
     if(nodes[i].anchored)
       colors.push_back(glm::vec4(1.0, 0.5, 0.5, 1.0));
@@ -644,8 +646,8 @@ void graph::send_points_and_edges_to_gpu()
         points.push_back(glm::vec3(nodes[e.node1].position));
         points.push_back(glm::vec3(nodes[e.node2].position));
     
-        tcolors.push_back(glm::vec4(0.3,0.4,0.2,1.0));
-        tcolors.push_back(glm::vec4(0.3,0.4,0.2,1.0));
+        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
+        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
 
         colors.push_back(CHASSIS_COLOR);
         colors.push_back(CHASSIS_COLOR);
@@ -664,8 +666,8 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION_COLOR);
         colors.push_back(SUSPENSION_COLOR);
         
-        tcolors.push_back(glm::vec4(0.3,0.6,0.2,1.0));
-        tcolors.push_back(glm::vec4(0.3,0.6,0.2,1.0));
+        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
+        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
     }
     else if(e.type == SUSPENSION1)
     {
@@ -675,8 +677,8 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION1_COLOR);
         colors.push_back(SUSPENSION1_COLOR);
         
-        tcolors.push_back(glm::vec4(0.5,0.6,0.2,1.0));
-        tcolors.push_back(glm::vec4(0.5,0.6,0.2,1.0));
+        tcolors.push_back(glm::vec4(nodes[e.node1].position,1));
+        tcolors.push_back(glm::vec4(nodes[e.node2].position,1));
     }
   }
   suspension_num = points.size() - suspension_start;
@@ -698,6 +700,8 @@ void graph::display()
 {
     //do your draw commands
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
 
     //regular colors
     color_mode();

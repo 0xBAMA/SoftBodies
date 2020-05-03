@@ -15,6 +15,7 @@ uniform float aspect_ratio;
 uniform mat4 perspective;
 
 out vec4 color;
+out vec3 position;
 
 //thanks to Neil Mendoza via http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
 mat3 rotationMatrix(vec3 axis, float angle)
@@ -31,6 +32,8 @@ mat3 rotationMatrix(vec3 axis, float angle)
 
 void main()
 {
+    position = vPosition;
+
     //side to side rotation first (about the x axis)
     mat3 rotx = rotationMatrix(vec3(1,0,0), theta);
 
