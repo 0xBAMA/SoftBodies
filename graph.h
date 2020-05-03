@@ -62,7 +62,7 @@ using std::endl;
 
 
 #include "shader.h"
-
+#include "perlin.h"
 
 
 //note here re: double precision 05/02/2020 4:40AM
@@ -163,7 +163,7 @@ class graph
           glUniformMatrix4fv(glGetUniformLocation(shader, "perspective"), 1, GL_TRUE, glm::value_ptr(proj));
         }
 
-        void set_highlight_index(int i) {highlight_index = i;}
+        void set_highlight_index(uint i) {highlight_index = i;}
 
         //which set of colors to use?
         void color_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),0);}
@@ -171,8 +171,8 @@ class graph
 
         float timescale = 0.1f;
         float gravity = 10.0f;
-        float noise_scale = 1.0f;
-        float noise_speed = 1.0f;
+        float noise_scale = 0.230f;
+        float noise_speed = 0.377f;
 
         float chassis_k = 70.0f;
         float chassis_damp = 3.0f;
@@ -200,7 +200,7 @@ class graph
 
 
 
-        int highlight_index = 0;
+        uint highlight_index = 0;
 
         std::vector<node> nodes;
         std::vector<edge> edges;
@@ -286,10 +286,10 @@ void graph::load_frame_points()
   #define WIDTH 0.2
   #define VERTICAL 0.1
   //come back to this, need to be able to visualize the rest of the points before I figure this part out
-  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), true);
-  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), true);
-  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), true);
-  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), true);
+  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), false);
+  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), false);
+  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), false);
+  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), false);
 
 
     //then all the chassis nodes
@@ -585,10 +585,31 @@ void graph::load_frame_points()
 
 void graph::update()
 {
-    for(int i = 0; i < 4; i++)
-    {
-        nodes[i].position.y += 0.001*cos(0.015*SDL_GetTicks());
-    }
+    glm::vec3 forward(0,0,1.618);
+    glm::vec3 sideways(1,0,0);
+
+    //some random direction
+    glm::vec3 direction_of_travel = glm::normalize(forward);
+
+    //static position in the noise space
+    static glm::vec3 offset = glm::vec3(0,0,0);
+
+    //advance that offset, based on the noise speed
+    offset += noise_speed*timescale*direction_of_travel; 
+    static PerlinNoise p;
+
+    glm::vec3 driver_front_sample_point = offset + forward - sideways;
+    glm::vec3 passenger_front_sample_point = offset + forward + sideways;
+    glm::vec3 driver_rear_sample_point = offset -forward - sideways;
+    glm::vec3 passenger_rear_sample_point = offset - forward + sideways;
+
+    nodes[0].position.y = nodes[0].old_position.y + noise_scale*(-0.5+p.noise(driver_front_sample_point.x, driver_front_sample_point.y, driver_front_sample_point.z));
+    nodes[1].position.y = nodes[1].old_position.y + noise_scale*(-0.5+p.noise(passenger_front_sample_point.x, passenger_front_sample_point.y, passenger_front_sample_point.z));
+    nodes[2].position.y = nodes[2].old_position.y + noise_scale*(-0.5+p.noise(driver_rear_sample_point.x, driver_rear_sample_point.y, driver_rear_sample_point.z));
+    nodes[3].position.y = nodes[3].old_position.y + noise_scale*(-0.5+p.noise(passenger_rear_sample_point.x, passenger_rear_sample_point.y, passenger_rear_sample_point.z));
+
+
+
     
 
     //send your points
@@ -622,6 +643,7 @@ void graph::send_points_and_edges_to_gpu()
     #define CHASSIS_COLOR       glm::vec4(0.461,0.411,0.356,1.0)
     #define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
     #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3) 
+    #define HIGHLIGHT_COLOR     glm::vec4(0.6,0.4,0.1,0.4)
   nodes_start = points.size();
   for(uint i = 0; i < nodes.size(); i++)
   {

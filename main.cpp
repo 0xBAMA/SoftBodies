@@ -94,11 +94,16 @@ int main(int, char**)
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
-    ImVec4 clear_color = ImVec4(48.0f/256.0f, 7.0f/256.0f, 17.0f/256.0f, 1.00f);
+    //ImVec4 clear_color = ImVec4(48.0f/256.0f, 7.0f/256.0f, 17.0f/256.0f, 1.00f);
+    ImVec4 clear_color = ImVec4(10.0f/256.0f, 99.0f/256.0f, 99.0f/256.0f, 1.00f);
 
 
     graph g;    //the graph
 
+        //start control window
+        static bool run_simulation = false;
+        static bool show_controls = true;
+        static bool instruction_window = true;
 
 
 
@@ -158,8 +163,11 @@ int main(int, char**)
                 {index--; g.set_highlight_index(index); cout << index << endl;}
                 
 
-                // if(event.key.keysym.sym == SDLK_z)
-                //
+                if(event.key.keysym.sym == SDLK_SPACE)
+                    run_simulation = !run_simulation;
+                
+
+
                 // if(event.key.keysym.sym == SDLK_x)
                 //
 
@@ -172,12 +180,8 @@ int main(int, char**)
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
 
-        //start control window
-        static bool run_simulation = false;
-        static bool show_controls = true;
-        static bool instruction_window = true;
 
-        ImGui::SetNextWindowSize(ImVec2(390,485));
+        ImGui::SetNextWindowSize(ImVec2(390,550));
         ImGui::Begin("Controls", &show_controls);
 
         ImGui::Text(" ");
@@ -213,37 +217,22 @@ int main(int, char**)
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 5.0f);
 
-        //static ImVec4 chassis_tension_color = {0x45,0x23,0x0,0xff};
-        //static ImVec4 chassis_compression_color = {0x0,0x23,0x43,0xff};
-
         ImGui::Text(" ");
         ImGui::Separator();
         ImGui::Separator();
         ImGui::Text("Chassis spring/damp constants  ");
         ImGui::Separator();
-        //ImGui::SetCursorPosX(25);
-        //ImGui::ColorEdit4("tension", (float*)&chassis_tension_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-        //ImGui::SetCursorPosX(25);
-        //ImGui::ColorEdit4("compression", (float*)&chassis_compression_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 100.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 40.0f);
 
-
-        //static ImVec4 suspension_tension_color = {0x11,0x45,0x2,0xff};
-        //static ImVec4 suspension_compression_color = {0x45,0x0,0x53,0xff};
-
         ImGui::Text(" ");
         ImGui::Separator();
         ImGui::Separator();
         ImGui::Text("Suspension spring/damp constants");
         ImGui::Separator();
-        //ImGui::SetCursorPosX(25);
-        //ImGui::ColorEdit4("tension", (float*)&suspension_tension_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-        //ImGui::SetCursorPosX(25);
-        //ImGui::ColorEdit4("compression", (float*)&suspension_compression_color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 100.0f);
@@ -253,9 +242,6 @@ int main(int, char**)
         ImGui::Text(" ");
         ImGui::Text(" ");
         ImGui::Text(" ");
-
-
-
 
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -275,7 +261,10 @@ int main(int, char**)
             ImGui::Text("  Left/Right - rotate side to side");
             ImGui::Text("  Up/Down    - rotate up and down");
             ImGui::Text(" ");
-            ImGui::Text("  pageup/pagedown - zoom in and out");
+            ImGui::Text("  Space      - play/pause simulation");
+            ImGui::Text(" ");
+            ImGui::Text(" ");
+            //ImGui::Text("  pageup/pagedown - zoom in and out");
 
 
 
