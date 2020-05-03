@@ -157,10 +157,10 @@ int main(int, char**)
 
                 static int index = 0;
                 if(event.key.keysym.sym == SDLK_a)
-                {index++; g.set_highlight_index(index); cout << index << endl;}
+                {index++; g.set_highlight_index(index); g.send_points_and_edges_to_gpu(); cout << index << endl;}
 
                 if(event.key.keysym.sym == SDLK_s)
-                {index--; g.set_highlight_index(index); cout << index << endl;}
+                {index--; g.set_highlight_index(index); g.send_points_and_edges_to_gpu(); cout << index << endl;}
                 
 
                 //toggle simulation running every frame
@@ -214,7 +214,7 @@ int main(int, char**)
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.1f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("gravity", &g.gravity, -5.0f, 10.0f);
+        ImGui::SliderFloat("gravity", &g.gravity, -2.0f, 3.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 1.0f);
         ImGui::SetCursorPosX(20);
@@ -227,9 +227,9 @@ int main(int, char**)
         ImGui::Separator();
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 100.0f);
+        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 500.0f);
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 40.0f);
+        ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 80.0f);
 
         ImGui::Text(" ");
         ImGui::Separator();
@@ -238,7 +238,7 @@ int main(int, char**)
         ImGui::Separator();
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 100.0f);
+        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 500.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("suspension damp", &g.suspension_damp, 0.0f, 40.0f);
 

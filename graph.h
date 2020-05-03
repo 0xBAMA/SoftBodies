@@ -182,6 +182,8 @@ class graph
         float suspension_k = 30.0f;
         float suspension_damp = 1.22f;
 
+        bool com = false;
+
     private:
 
         //OpenGL Data
@@ -359,10 +361,9 @@ void graph::load_frame_points()
     add_edge(5+OFFSET, 4+OFFSET, CHASSIS);
     add_edge(1+OFFSET, 6+OFFSET, CHASSIS);
     add_edge(5+OFFSET, 8+OFFSET, CHASSIS);
-    add_edge(8+OFFSET, 9+OFFSET, CHASSIS);
-    add_edge(9+OFFSET, 10+OFFSET, CHASSIS);
+    add_edge(8+OFFSET, 10+OFFSET, CHASSIS);
     add_edge(10+OFFSET, 11+OFFSET, CHASSIS);
-    add_edge(4+OFFSET, 9+OFFSET, CHASSIS);
+    add_edge(4+OFFSET, 10+OFFSET, CHASSIS);
     add_edge(10+OFFSET, 12+OFFSET, CHASSIS);
     add_edge(4+OFFSET, 12+OFFSET, CHASSIS);
     add_edge(6+OFFSET, 12+OFFSET, CHASSIS);
@@ -395,10 +396,9 @@ void graph::load_frame_points()
     add_edge(24+OFFSET, 29+OFFSET, CHASSIS);
     add_edge(23+OFFSET, 27+OFFSET, CHASSIS);
     add_edge(26+OFFSET, 30+OFFSET, CHASSIS);
-    add_edge(30+OFFSET, 31+OFFSET, CHASSIS);
-    add_edge(31+OFFSET, 32+OFFSET, CHASSIS);
+    add_edge(30+OFFSET, 32+OFFSET, CHASSIS);
     add_edge(32+OFFSET, 33+OFFSET, CHASSIS);
-    add_edge(25+OFFSET, 31+OFFSET, CHASSIS);
+    add_edge(25+OFFSET, 32+OFFSET, CHASSIS);
     add_edge(32+OFFSET, 34+OFFSET, CHASSIS);
     add_edge(25+OFFSET, 34+OFFSET, CHASSIS);
     add_edge(27+OFFSET, 34+OFFSET, CHASSIS);
@@ -573,7 +573,7 @@ void graph::load_frame_points()
     add_edge(2, 30, SUSPENSION);
     add_edge(2, 37, SUSPENSION);
     add_edge(2, 39, SUSPENSION);
-    
+
     add_edge(3, 4, SUSPENSION);
     add_edge(3, 6, SUSPENSION);
     add_edge(3, 7, SUSPENSION);
@@ -603,7 +603,7 @@ void graph::update()
     static glm::vec3 offset = glm::vec3(0,0,0);
 
     //advance that offset, based on the noise speed
-    offset += noise_speed*timescale*direction_of_travel; 
+    offset += noise_speed*timescale*direction_of_travel;
     static PerlinNoise p;
 
     glm::vec3 driver_front_sample_point = offset + forward - sideways;
@@ -637,7 +637,7 @@ void graph::update()
             double k = 0;
             double d = 0;
 
-            
+
             //get your forces from all the connections - accumulate in force vector
             for(uint i = 0; i < n.edges.size(); i++)
             {
@@ -656,10 +656,10 @@ void graph::update()
                         //tbd
                         break;
                 }
-                
+
                 //get positions of the two nodes involved
                 glm::dvec3 my_position = n.old_position;
-                glm::dvec3 ur_position = nodes[n.edges[i].node2].anchored ? 
+                glm::dvec3 ur_position = nodes[n.edges[i].node2].anchored ?
                     nodes[n.edges[i].node2].position :          //use 'new position' for anchored nodes (new_position is up to date)
                     nodes[n.edges[i].node2].old_position;       //use old position for unanchored nodes (old value is what you use)
 
@@ -667,9 +667,9 @@ void graph::update()
                 double spring_ratio = glm::distance(my_position, ur_position) / n.edges[i].base_length;
 
                 //spring force
-                //force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
+                force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
                 //should this be normalized or no?
-                force += -k * (my_position - ur_position) * (spring_ratio - 1);
+                //force += -k * (my_position - ur_position) * (spring_ratio - 1);
 
                 //damping force
                 force -= d * n.old_velocity;
@@ -677,7 +677,7 @@ void graph::update()
 
             //add gravity
             force += (double)n.mass * glm::dvec3(0,-gravity,0);
-            
+
             //get the resulting acceleration
             glm::dvec3 acceleration = force/(double)n.mass;
 
@@ -713,15 +713,23 @@ void graph::send_points_and_edges_to_gpu()
     //else
       //colors.push_back(glm::vec4(1.0, 1.0, 0.75, 1.0));
   //}
- 
 
+    std::random_device rd;
+    std::mt19937 gen(rd()); 
+    std::uniform_real_distribution<float> dis(0.1, 1.0);
 
     #define CHASSIS_NODE_COLOR  glm::vec4(0.36,0.350,0.305,1.0)
     #define CHASSIS_COLOR       glm::vec4(0.400,0.400,0.320,1.0)
     #define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
-    #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3) 
+    #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3)
     #define HIGHLIGHT_COLOR     glm::vec4(0.1,0.2,0.1,0.4)
     #define HIGHLIGHT_COLOR_B   glm::vec4(0.1,0.4,0.6,0.4)
+
+    #define HIGHLIGHT_TENSION       glm::vec4(0,0,0.5,1)
+    #define HIGHLIGHT_COMPRESSION   glm::vec4(0.5,0,0,1)
+
+
+
     //going to need to refine how this works in order to reflect the
     //tension/compression in a more continuous way, some kind of
     //gradient going on
@@ -734,12 +742,16 @@ void graph::send_points_and_edges_to_gpu()
     tcolors.push_back(glm::vec4(nodes[i].position, 1.0f));
 
     if(nodes[i].anchored)
-      colors.push_back(glm::vec4(0.2, 0.6, 0.5, 1.0));
+      colors.push_back(glm::vec4(0.4, 0.6, 0.5, 1.0));
     else
         if(i == highlight_index)
-            colors.push_back(glm::vec4(1.0, 0.0, 0.2, 1.0)); 
+            colors.push_back(glm::vec4(1.0, 0.0, 0.2, 1.0));
         else
+        {
+            //float f = dis(gen);
+            //colors.push_back(glm::vec4(f,0.6*f,0.2*f,1));
             colors.push_back(CHASSIS_NODE_COLOR);
+        }
   }
   nodes_num = points.size() - nodes_start;
 
@@ -750,9 +762,17 @@ void graph::send_points_and_edges_to_gpu()
     {
         points.push_back(glm::vec3(nodes[e.node1].position));
         points.push_back(glm::vec3(nodes[e.node2].position));
-    
-        tcolors.push_back(HIGHLIGHT_COLOR);
-        tcolors.push_back(HIGHLIGHT_COLOR);
+
+        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        {
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+        }
+        else
+        {
+            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_TENSION);
+        }
 
         colors.push_back(CHASSIS_COLOR);
         colors.push_back(CHASSIS_COLOR);
@@ -770,9 +790,17 @@ void graph::send_points_and_edges_to_gpu()
 
         colors.push_back(SUSPENSION_COLOR);
         colors.push_back(SUSPENSION_COLOR);
-        
-        tcolors.push_back(HIGHLIGHT_COLOR_B);
-        tcolors.push_back(HIGHLIGHT_COLOR_B);
+
+        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        {
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+        }
+        else
+        {
+            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_TENSION);
+        }
     }
     else if(e.type == SUSPENSION1)
     {
@@ -781,12 +809,21 @@ void graph::send_points_and_edges_to_gpu()
 
         colors.push_back(SUSPENSION1_COLOR);
         colors.push_back(SUSPENSION1_COLOR);
-        
-        tcolors.push_back(HIGHLIGHT_COLOR_B);
-        tcolors.push_back(HIGHLIGHT_COLOR_B);
+
+        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        {
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+        }
+        else
+        {
+            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_TENSION);
+        }
     }
   }
   suspension_num = points.size() - suspension_start;
+
 
   num_bytes_points = points.size() * sizeof(glm::vec3);
   num_bytes_colors = colors.size() * sizeof(glm::vec4);
@@ -820,11 +857,10 @@ void graph::display()
     tcolor_mode();
     glLineWidth(4.0f);
     glDrawArrays(GL_LINES, suspension_start, suspension_num);
-    
+
     glLineWidth(8.0f);
     glDrawArrays(GL_LINES, chassis_start, chassis_num);
-    
-    
+
     //chassis nodes
     color_mode();
     glPointSize(7.0f);
