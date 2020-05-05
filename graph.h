@@ -177,14 +177,14 @@ class graph
         float timescale = 0.01f;
         float gravity = -2.0f;
         float noise_scale = 0.088f;
-        float noise_speed = 0.255f;
+        float noise_speed = 5.0f;
 
-        float chassis_k = 1000.0f;
-        float chassis_damp = 22.0f;
+        float chassis_k = 1430.0f;
+        float chassis_damp = 31.3f;
 
         float chassis_mass = 3.0f;
 
-        float suspension_k = 600.0f;
+        float suspension_k = 790.0f;
         float suspension_damp = 5.22f;
 
         bool com = false;
@@ -740,16 +740,26 @@ void graph::send_points_and_edges_to_gpu()
   //}
 
 
-    #define CHASSIS_NODE_COLOR  glm::vec4(0.36,0.350,0.305,1.0)
-    #define CHASSIS_COLOR       glm::vec4(0.400,0.400,0.320,1.0)
-    #define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
-    #define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3)
+    
+    //#define CHASSIS_NODE_COLOR  glm::vec4(0.36,0.350,0.305,1.0)
+    //#define CHASSIS_COLOR       glm::vec4(0.400,0.400,0.320,1.0)
+    //#define SUSPENSION_COLOR    glm::vec4(0.1,0.2,0.2,0.5)
+    //#define SUSPENSION1_COLOR   glm::vec4(0.2,0.1,0.1,0.3)
+
+    //#define CHASSIS_COLOR       glm::vec4(0.42, 0.24, 0.0, 0.3)
+
+    #define CHASSIS_NODE_COLOR  glm::vec4(0.23, 0.26, 0.08,1.0)
+    #define CHASSIS_COLOR       glm::vec4(0.25, 0.28, 0.10,1.0)
+    #define SUSPENSION_COLOR   glm::vec4(0.43, 0.36, 0.11,1.0)
+    #define SUSPENSION1_COLOR    glm::vec4(0.3, 0.2, 0.1, 0.5)
+
     #define HIGHLIGHT_COLOR     glm::vec4(0.1,0.2,0.1,0.4)
     #define HIGHLIGHT_COLOR_B   glm::vec4(0.1,0.4,0.6,0.4)
 
     #define HIGHLIGHT_TENSION       glm::vec4(0,0,0.5,1)
     #define HIGHLIGHT_COMPRESSION   glm::vec4(0.5,0,0,1)
 
+    #define HIGHLIGHT_BLACK            glm::vec4(0,0,0,1)
 
 
     //going to need to refine how this works in order to reflect the
@@ -785,15 +795,23 @@ void graph::send_points_and_edges_to_gpu()
         points.push_back(glm::vec3(nodes[e.node1].position));
         points.push_back(glm::vec3(nodes[e.node2].position));
 
-        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        if(tension_color_only)
         {
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+            {
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            }
+            else
+            {
+                tcolors.push_back(HIGHLIGHT_TENSION);
+                tcolors.push_back(HIGHLIGHT_TENSION);
+            }
         }
         else
         {
-            tcolors.push_back(HIGHLIGHT_TENSION);
-            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_BLACK);
+            tcolors.push_back(HIGHLIGHT_BLACK);
         }
 
         colors.push_back(CHASSIS_COLOR);
@@ -813,15 +831,23 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION_COLOR);
         colors.push_back(SUSPENSION_COLOR);
 
-        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        if(tension_color_only)
         {
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+            {
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            }
+            else
+            {
+                tcolors.push_back(HIGHLIGHT_TENSION);
+                tcolors.push_back(HIGHLIGHT_TENSION);
+            }
         }
         else
         {
-            tcolors.push_back(HIGHLIGHT_TENSION);
-            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_BLACK);
+            tcolors.push_back(HIGHLIGHT_BLACK);
         }
     }
     else if(e.type == SUSPENSION1)
@@ -832,15 +858,23 @@ void graph::send_points_and_edges_to_gpu()
         colors.push_back(SUSPENSION1_COLOR);
         colors.push_back(SUSPENSION1_COLOR);
 
-        if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+        if(tension_color_only)
         {
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
-            tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            if(glm::distance(nodes[e.node1].position, nodes[e.node2].position) < e.base_length)
+            {
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+                tcolors.push_back(HIGHLIGHT_COMPRESSION);
+            }
+            else
+            {
+                tcolors.push_back(HIGHLIGHT_TENSION);
+                tcolors.push_back(HIGHLIGHT_TENSION);
+            }
         }
         else
         {
-            tcolors.push_back(HIGHLIGHT_TENSION);
-            tcolors.push_back(HIGHLIGHT_TENSION);
+            tcolors.push_back(HIGHLIGHT_BLACK);
+            tcolors.push_back(HIGHLIGHT_BLACK);
         }
     }
   }
@@ -849,17 +883,27 @@ void graph::send_points_and_edges_to_gpu()
 
 
 
-#define NUM_STEPS_LR 10 
-#define NUM_STEPS_FB 10
+#define NUM_STEPS_LR 100 
+#define NUM_STEPS_FB 100
+
+//#define FRONT_EXTENT
   ground_start = points.size();
     float noise_read;
 
+  for(double horizontal = -0.65; horizontal <= 0.65; horizontal += 1.3/NUM_STEPS_LR)
+      for(double vertical = -0.9; vertical <= 0.9; vertical += 1.8/NUM_STEPS_FB)
+      {
+        noise_read = p.noise(horizontal + offset.x, 0, vertical + offset.z);
+        points.push_back(glm::vec3(horizontal, -0.2+noise_scale*(-0.7+noise_read), vertical));
+        colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+        tcolors.push_back(glm::vec4(noise_read));
+      }
 
-
-     
+    /* 
   for(double horizontal = -0.05; horizontal <= 0.05; horizontal += 0.1/NUM_STEPS_LR)
       for(double vertical = -0.0618; vertical <= 0.0618; vertical += 0.13/NUM_STEPS_FB)
       {
+     
         glm::vec3 wheeloffset = nodes[0].position;
         noise_read = p.noise(horizontal+offset.x+wheeloffset.x, 0, vertical+offset.z+wheeloffset.z);
         
@@ -923,13 +967,11 @@ void graph::send_points_and_edges_to_gpu()
             points.push_back(glm::vec3(x, -0.225+dish(gen)+noise_scale*(-0.7+noise_read), z));
         }
 
-
-
         tcolors.push_back(glm::vec4(noise_read));
 
     }
 
-
+    */
 
     
 
@@ -958,8 +1000,6 @@ void graph::display()
 
     //regular colors
     color_mode();
-    if(tension_color_only)
-        tcolor_mode();
     glLineWidth(3.0f);
     glDrawArrays(GL_LINES, suspension_start, suspension_num);
 

@@ -95,22 +95,27 @@ int main(int, char**)
 
     // Our state
     //ImVec4 clear_color = ImVec4(48.0f/256.0f, 7.0f/256.0f, 17.0f/256.0f, 1.00f);
-    ImVec4 clear_color = ImVec4(10.0f/256.0f, 99.0f/256.0f, 99.0f/256.0f, 1.00f);
+    //ImVec4 clear_color = ImVec4(10.0f/256.0f, 99.0f/256.0f, 99.0f/256.0f, 1.00f);
+    ImVec4 clear_color = ImVec4(99.0f/256.0f, 62.0f/256.0f, 10.0f/256.0f, 1.00f);
 
 
     graph g;    //the graph
 
-        //start control window
-        static bool run_simulation = false;
-        static bool show_controls = true;
-        static bool instruction_window = true;
+    bool run_simulation = true;
+    bool show_controls = true;
+    bool instruction_window = false;
+    bool rotation_window = false;
 
+    float theta = -0.263;
+    float phi = 2.186;
+    float roll = 0.035;
 
 
     // Main loop
     bool done = false;
     while (!done)
     {
+
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
@@ -130,45 +135,23 @@ int main(int, char**)
             }
 
 
-            static float theta = 0;
-            static float phi = 0;
-            static float roll = 0;
 
             if(event.type == SDL_KEYDOWN)
             {
                 if(event.key.keysym.sym == SDLK_RIGHT)
-                {
                     phi += 0.01;
-                    g.set_rotate_phi(phi);
-                }
                 if(event.key.keysym.sym == SDLK_LEFT)
-                {
                     phi -= 0.01;
-                    g.set_rotate_phi(phi);
-                }
+
                 if(event.key.keysym.sym == SDLK_UP)
-                {
                     theta += 0.01;
-                    g.set_rotate_theta(theta);
-                }
                 if(event.key.keysym.sym == SDLK_DOWN)
-                {
                     theta -= 0.01;
-                    g.set_rotate_theta(theta);
-                }
 
                 if(event.key.keysym.sym == SDLK_RIGHTBRACKET)
-                {
                     roll += 0.01;
-                    g.set_rotate_roll(roll);
-                }
-
                 if(event.key.keysym.sym == SDLK_LEFTBRACKET)
-                {
                     roll -= 0.01;
-                    g.set_rotate_roll(roll);
-                }
-                
 
                 static int index = 0;
                 if(event.key.keysym.sym == SDLK_a)
@@ -182,8 +165,6 @@ int main(int, char**)
                 if(event.key.keysym.sym == SDLK_SPACE)
                     run_simulation = !run_simulation;
                 
-
-
                 // if(event.key.keysym.sym == SDLK_x)
                 //
 
@@ -203,6 +184,7 @@ int main(int, char**)
         ImGui::Text(" ");
 
         ImGui::Checkbox("Instructions", &instruction_window);
+        ImGui::Checkbox("Rotation", &rotation_window);
         ImGui::Checkbox("Tension Color", &g.tension_color_only);
         ImGui::Checkbox("Run simulation", &run_simulation);
 
@@ -279,14 +261,35 @@ int main(int, char**)
             ImGui::Text(" ");
             ImGui::Text("  Left/Right - rotate side to side");
             ImGui::Text("  Up/Down    - rotate up and down");
+            ImGui::Text("  square brackets to roll");
             ImGui::Text(" ");
             ImGui::Text("  Space      - play/pause simulation");
             ImGui::Text(" ");
             ImGui::Text(" ");
-            //ImGui::Text("  pageup/pagedown - zoom in and out");
 
+            ImGui::End();
+        }
 
+        //Draw a window with some instructions
+        if(rotation_window)
+        {
+            ImGui::SetNextWindowSize(ImVec2(300,250));
+            ImGui::Begin("Rotation", &rotation_window);
 
+            ImGui::Text(" ");
+            ImGui::Text(" ");
+            
+            ImGui::Separator();
+
+            ImGui::SliderFloat("phi", &phi, -6.28f, 6.28f);
+            ImGui::SliderFloat("theta", &theta, -6.28f, 6.28f);
+            ImGui::SliderFloat("roll", &roll, -6.28f, 6.28f);
+                    
+           
+            ImGui::Separator();
+            
+            ImGui::Text(" ");
+            ImGui::Text(" ");
 
             ImGui::End();
         }
@@ -297,9 +300,15 @@ int main(int, char**)
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //update the softbody sim
         if(run_simulation)
             g.update();
 
+        //update the rotation values
+        g.set_rotate_phi(phi);
+        g.set_rotate_theta(theta);
+        g.set_rotate_roll(roll);
+        
         g.display();
         ImGui::Render();
 
