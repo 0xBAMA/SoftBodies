@@ -174,18 +174,18 @@ class graph
         void color_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),0);}
         void tcolor_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),1);}
 
-        float timescale = 0.1f;
-        float gravity = 10.0f;
+        float timescale = 0.01f;
+        float gravity = -2.0f;
         float noise_scale = 0.088f;
         float noise_speed = 0.255f;
 
-        float chassis_k = 70.0f;
-        float chassis_damp = 3.0f;
+        float chassis_k = 1000.0f;
+        float chassis_damp = 22.0f;
 
         float chassis_mass = 3.0f;
 
-        float suspension_k = 30.0f;
-        float suspension_damp = 1.22f;
+        float suspension_k = 600.0f;
+        float suspension_damp = 5.22f;
 
         bool com = false;
         bool tension_color_only = false;
@@ -739,9 +739,6 @@ void graph::send_points_and_edges_to_gpu()
       //colors.push_back(glm::vec4(1.0, 1.0, 0.75, 1.0));
   //}
 
-    std::random_device rd;
-    std::mt19937 gen(rd()); 
-    std::uniform_real_distribution<float> dis(0.1, 1.0);
 
     #define CHASSIS_NODE_COLOR  glm::vec4(0.36,0.350,0.305,1.0)
     #define CHASSIS_COLOR       glm::vec4(0.400,0.400,0.320,1.0)
@@ -852,18 +849,89 @@ void graph::send_points_and_edges_to_gpu()
 
 
 
-#define NUM_STEPS_LR 80
-#define NUM_STEPS_FB 240
+#define NUM_STEPS_LR 10 
+#define NUM_STEPS_FB 10
   ground_start = points.size();
+    float noise_read;
 
-  for(double horizontal = -1.0; horizontal <= 1.0; horizontal += 2.0/NUM_STEPS_LR)
-      for(double vertical = -1.5; vertical <= 1.5; vertical += 3.0/NUM_STEPS_FB)
+
+
+     
+  for(double horizontal = -0.05; horizontal <= 0.05; horizontal += 0.1/NUM_STEPS_LR)
+      for(double vertical = -0.0618; vertical <= 0.0618; vertical += 0.13/NUM_STEPS_FB)
       {
-          float noise_read = p.noise(horizontal+offset.x, 0, vertical+offset.z);
-          points.push_back(glm::vec3(horizontal, -0.2+noise_scale*(-0.7+noise_read), vertical));
-          colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
-          tcolors.push_back(glm::vec4(noise_read));
+        glm::vec3 wheeloffset = nodes[0].position;
+        noise_read = p.noise(horizontal+offset.x+wheeloffset.x, 0, vertical+offset.z+wheeloffset.z);
+        
+        points.push_back(glm::vec3(horizontal+wheeloffset.x, -0.2+noise_scale*(-0.7+noise_read), vertical+wheeloffset.z));
+        colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+        tcolors.push_back(glm::vec4(noise_read));
+      
+      
+        wheeloffset = nodes[1].position;
+        noise_read = p.noise(horizontal+offset.x+wheeloffset.x, 0, vertical+offset.z+wheeloffset.z);
+        
+        points.push_back(glm::vec3(horizontal+wheeloffset.x, -0.2+noise_scale*(-0.7+noise_read), vertical+wheeloffset.z));
+        colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+        tcolors.push_back(glm::vec4(noise_read));
+     
+
+        wheeloffset = nodes[2].position;
+        noise_read = p.noise(horizontal+offset.x+wheeloffset.x, 0, vertical+offset.z+wheeloffset.z);
+        
+        points.push_back(glm::vec3(horizontal+wheeloffset.x, -0.2+noise_scale*(-0.7+noise_read), vertical+wheeloffset.z));
+        colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+        tcolors.push_back(glm::vec4(noise_read));
+      
+      
+        wheeloffset = nodes[3].position;
+        noise_read = p.noise(horizontal+offset.x+wheeloffset.x, 0, vertical+offset.z+wheeloffset.z);
+        
+        points.push_back(glm::vec3(horizontal+wheeloffset.x, -0.2+noise_scale*(-0.7+noise_read), vertical+wheeloffset.z));
+        colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+        tcolors.push_back(glm::vec4(noise_read));
       }
+
+
+    
+    std::random_device rd;
+    std::mt19937 gen(rd()); 
+    
+    std::uniform_real_distribution<float> disx(-0.5, 0.5);
+    std::uniform_real_distribution<float> disz(-0.9, 0.9);
+
+    std::uniform_real_distribution<float> dish(-0.03, 0.02);
+    std::uniform_real_distribution<float> disc(-0.1, 0.1);
+
+
+    float x,z;
+    for(int i = 0; i < 10000; i++)
+    {
+        x = disx(gen);
+        z = disz(gen);
+        noise_read = p.noise(offset.x+x, 0, offset.z+z);
+        
+       
+        if(p.noise(15*(offset.x+x),0,5*(offset.z+z)) < 0.6)
+        {
+            colors.push_back(glm::vec4(0.45, 0.6*noise_read+disc(gen), 0.3, 1));
+            points.push_back(glm::vec3(x, -0.25+dish(gen)+noise_scale*(-0.7+noise_read), z));
+        }
+        else
+        {
+            colors.push_back(glm::vec4(0.3+3*disc(gen), 0.4+4*disc(gen), 0, 1));
+            points.push_back(glm::vec3(x, -0.225+dish(gen)+noise_scale*(-0.7+noise_read), z));
+        }
+
+
+
+        tcolors.push_back(glm::vec4(noise_read));
+
+    }
+
+
+
+    
 
   ground_num = points.size() - ground_start;
 
@@ -911,6 +979,6 @@ void graph::display()
     glPointSize(7.0f);
     glDrawArrays(GL_POINTS, nodes_start, nodes_num);
 
-    glPointSize(5.0f);
+    glPointSize(2.0f);
     glDrawArrays(GL_POINTS, ground_start, ground_num);
 }
