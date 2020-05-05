@@ -9,6 +9,12 @@ void main()
     fragColor = color;
     fragColor.xyz *= 1.25-gl_FragCoord.z;
 
+
+
+    //fragColor.xyz = position + vec3(0.5);
+    //fragColor.a = 1;
+
+
     //this is dumb, but position based effects have a lot of potential
     //fragColor *= clamp(3*(sin(1000*position.x)-0.5) +3*(sin(1000*position.y)-0.5) +3*(sin(1000*position.z)-0.5) , 0.75, 1.2);
     

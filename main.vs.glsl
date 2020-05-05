@@ -10,6 +10,7 @@ uniform int color_mode;
 
 uniform float theta;
 uniform float phi;
+uniform float roll;
 
 uniform float aspect_ratio;
 uniform mat4 perspective;
@@ -40,6 +41,13 @@ void main()
     //then the up and down rotation (about the y axis)
     mat3 roty = rotationMatrix(vec3(0,1,0), phi);
     vec3 position = roty*rotx*vPosition;
+
+
+    vec3 roll_vec = roty*rotx*vec3(0,0,1);
+    mat3 roll_mat = rotationMatrix(roll_vec, roll);
+
+    position *= roll_mat;
+
 
     gl_Position = vec4(position, 1.0);
     gl_Position.x /= aspect_ratio;

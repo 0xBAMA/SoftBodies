@@ -132,6 +132,8 @@ int main(int, char**)
 
             static float theta = 0;
             static float phi = 0;
+            static float roll = 0;
+
             if(event.type == SDL_KEYDOWN)
             {
                 if(event.key.keysym.sym == SDLK_RIGHT)
@@ -154,6 +156,19 @@ int main(int, char**)
                     theta -= 0.01;
                     g.set_rotate_theta(theta);
                 }
+
+                if(event.key.keysym.sym == SDLK_RIGHTBRACKET)
+                {
+                    roll += 0.01;
+                    g.set_rotate_roll(roll);
+                }
+
+                if(event.key.keysym.sym == SDLK_LEFTBRACKET)
+                {
+                    roll -= 0.01;
+                    g.set_rotate_roll(roll);
+                }
+                
 
                 static int index = 0;
                 if(event.key.keysym.sym == SDLK_a)
@@ -188,6 +203,7 @@ int main(int, char**)
         ImGui::Text(" ");
 
         ImGui::Checkbox("Instructions", &instruction_window);
+        ImGui::Checkbox("Tension Color", &g.tension_color_only);
         ImGui::Checkbox("Run simulation", &run_simulation);
 
         ImGui::SameLine();
@@ -227,7 +243,7 @@ int main(int, char**)
         ImGui::Separator();
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 500.0f);
+        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 2500.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 80.0f);
 
@@ -238,7 +254,7 @@ int main(int, char**)
         ImGui::Separator();
 
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 500.0f);
+        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 1500.0f);
         ImGui::SetCursorPosX(20);
         ImGui::SliderFloat("suspension damp", &g.suspension_damp, 0.0f, 40.0f);
 

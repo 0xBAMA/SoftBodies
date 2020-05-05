@@ -134,6 +134,11 @@ class graph
           glUniform1fv(glGetUniformLocation(shader, "theta"), 1, &theta);
         }
 
+        void set_rotate_roll(float roll)
+        {
+          glUniform1fv(glGetUniformLocation(shader, "roll"), 1, &roll);
+        }
+
         void set_AR()
         {
           //this is how you query the screen resolution
@@ -183,6 +188,7 @@ class graph
         float suspension_damp = 1.22f;
 
         bool com = false;
+        bool tension_color_only = false;
 
     private:
 
@@ -198,7 +204,7 @@ class graph
         int chassis_start, chassis_num;
         int suspension_start, suspension_num;
         int nodes_start, nodes_num;
-
+        int ground_start, ground_num;
 
 
 
@@ -206,6 +212,9 @@ class graph
 
         std::vector<node> nodes;
         std::vector<edge> edges;
+    
+        PerlinNoise p;  //offset keeps track of vehicle position
+        glm::vec3 offset = glm::vec3(0,0,0);
 };
 
 
@@ -294,12 +303,11 @@ void graph::load_frame_points()
     //lead with 4 anchor points
 
   #define WIDTH 0.2
-  #define VERTICAL 0.1
   //come back to this, need to be able to visualize the rest of the points before I figure this part out
-  add_node(0, glm::dvec3(-WIDTH*0.875, -VERTICAL, 0.6), true);
-  add_node(0, glm::dvec3( WIDTH*0.875, -VERTICAL, 0.6), true);
-  add_node(0, glm::dvec3(-WIDTH, -VERTICAL, -0.25), true);
-  add_node(0, glm::dvec3( WIDTH, -VERTICAL, -0.25), true);
+  add_node(0, glm::dvec3(-WIDTH*0.875, -0.1, 0.6), true);
+  add_node(0, glm::dvec3( WIDTH*0.875, -0.1, 0.6), true);
+  add_node(0, glm::dvec3(-WIDTH, -0.1, -0.25), true);
+  add_node(0, glm::dvec3( WIDTH, -0.1, -0.25), true);
 
 
     //then all the chassis nodes
@@ -593,24 +601,41 @@ void graph::load_frame_points()
 
 void graph::update()
 {
-    glm::vec3 forward(0,0,1.618);
-    glm::vec3 sideways(1,0,0);
-
     //some random direction
-    glm::vec3 direction_of_travel = glm::normalize(forward);
+    glm::vec3 direction_of_travel = glm::vec3(0,0,1); 
 
     //static position in the noise space
-    static glm::vec3 offset = glm::vec3(0,0,0);
 
     //advance that offset, based on the noise speed
     offset += noise_speed*timescale*direction_of_travel;
-    static PerlinNoise p;
 
-    glm::vec3 driver_front_sample_point = offset + forward - sideways;
-    glm::vec3 passenger_front_sample_point = offset + forward + sideways;
-    glm::vec3 driver_rear_sample_point = offset -forward - sideways;
-    glm::vec3 passenger_rear_sample_point = offset - forward + sideways;
+    glm::vec3 driver_front_sample_point = offset;
+    glm::vec3 passenger_front_sample_point = offset;
+    glm::vec3 driver_rear_sample_point = offset;
+    glm::vec3 passenger_rear_sample_point = offset;
 
+    glm::vec3 temp;
+
+    temp = nodes[0].position;
+    temp.y = 0; 
+
+    driver_front_sample_point += temp;
+
+    temp = nodes[1].position;
+    temp.y = 0;
+
+    passenger_front_sample_point += temp;
+
+    temp = nodes[2].position;
+    temp.y = 0;
+
+    driver_rear_sample_point += temp;
+    
+    temp = nodes[3].position;
+    temp.y = 0;
+    
+    passenger_rear_sample_point += temp;
+        
     //new anchor positions
     nodes[0].position.y = nodes[0].old_position.y + noise_scale*(-0.7+p.noise(driver_front_sample_point.x, driver_front_sample_point.y, driver_front_sample_point.z));
     nodes[1].position.y = nodes[1].old_position.y + noise_scale*(-0.7+p.noise(passenger_front_sample_point.x, passenger_front_sample_point.y, passenger_front_sample_point.z));
@@ -825,6 +850,24 @@ void graph::send_points_and_edges_to_gpu()
   suspension_num = points.size() - suspension_start;
 
 
+
+
+#define NUM_STEPS_LR 80
+#define NUM_STEPS_FB 240
+  ground_start = points.size();
+
+  for(double horizontal = -1.0; horizontal <= 1.0; horizontal += 2.0/NUM_STEPS_LR)
+      for(double vertical = -1.5; vertical <= 1.5; vertical += 3.0/NUM_STEPS_FB)
+      {
+          float noise_read = p.noise(horizontal+offset.x, 0, vertical+offset.z);
+          points.push_back(glm::vec3(horizontal, -0.2+noise_scale*(-0.7+noise_read), vertical));
+          colors.push_back(glm::vec4(noise_read, 0.5*noise_read, 0, 1));
+          tcolors.push_back(glm::vec4(noise_read));
+      }
+
+  ground_num = points.size() - ground_start;
+
+
   num_bytes_points = points.size() * sizeof(glm::vec3);
   num_bytes_colors = colors.size() * sizeof(glm::vec4);
   num_bytes_tcolors = tcolors.size() * sizeof(glm::vec4);
@@ -847,6 +890,8 @@ void graph::display()
 
     //regular colors
     color_mode();
+    if(tension_color_only)
+        tcolor_mode();
     glLineWidth(3.0f);
     glDrawArrays(GL_LINES, suspension_start, suspension_num);
 
@@ -865,4 +910,7 @@ void graph::display()
     color_mode();
     glPointSize(7.0f);
     glDrawArrays(GL_POINTS, nodes_start, nodes_num);
+
+    glPointSize(5.0f);
+    glDrawArrays(GL_POINTS, ground_start, ground_num);
 }
