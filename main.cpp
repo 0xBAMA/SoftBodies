@@ -103,8 +103,6 @@ int main(int, char**)
 
     bool run_simulation = true;
     bool show_controls = true;
-    bool instruction_window = false;
-    bool rotation_window = false;
 
     float theta = -0.263;
     float phi = 2.186;
@@ -177,16 +175,12 @@ int main(int, char**)
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
 
+        //ImGui::ShowDemoWindow();
 
         ImGui::SetNextWindowSize(ImVec2(390,550));
         ImGui::Begin("Controls", &show_controls);
 
-        ImGui::Text(" ");
-
-        ImGui::Checkbox("Instructions", &instruction_window);
-        ImGui::Checkbox("Rotation", &rotation_window);
-        ImGui::Checkbox("Tension Color", &g.tension_color_only);
-        ImGui::Checkbox("Run simulation", &run_simulation);
+       ImGui::Checkbox("Run simulation", &run_simulation);
 
         ImGui::SameLine();
         if(ImGui::Button("Single Step"))
@@ -204,95 +198,103 @@ int main(int, char**)
             g.send_points_and_edges_to_gpu();
         }
 
-        ImGui::Text(" ");
-        ImGui::Separator();
-        ImGui::Separator();
-        ImGui::Text("Simulation general settings");
-        ImGui::Separator();
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.1f);
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("gravity", &g.gravity, -2.0f, 3.0f);
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 1.0f);
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 2.0f);
 
-        ImGui::Text(" ");
-        ImGui::Separator();
-        ImGui::Separator();
-        ImGui::Text("Chassis spring/damp constants  ");
-        ImGui::Separator();
 
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+        {
+            if (ImGui::BeginTabItem("Simulation"))
+            {
+                ImGui::Separator();
+                ImGui::Separator();
+                ImGui::Text("Simulation general settings");
+                ImGui::Separator();
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.1f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("gravity", &g.gravity, -2.0f, 3.0f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 1.0f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("noise speed", &g.noise_speed, 0, 2.0f);
+
+                ImGui::Text(" ");
+                ImGui::Separator();
+                ImGui::Separator();
+                ImGui::Text("Chassis spring/damp constants  ");
+                ImGui::Separator();
+
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 2500.0f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 80.0f);
+
+                ImGui::Text(" ");
+                ImGui::Separator();
+                ImGui::Separator();
+                ImGui::Text("Suspension spring/damp constants");
+                ImGui::Separator();
+
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 1500.0f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("suspension damp", &g.suspension_damp, 0.0f, 40.0f);
+
+                ImGui::Text(" ");
+                ImGui::Text(" ");
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Rendering"))
+            {
+                ImGui::Separator();
+                ImGui::Separator();
+                ImGui::Text("Rotation");
+                ImGui::Separator();
+
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("phi", &phi, -6.28f, 6.28f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("theta", &theta, -6.28f, 6.28f);
+                ImGui::SetCursorPosX(20);
+                ImGui::SliderFloat("roll", &roll, -6.28f, 6.28f);
+                    
+                ImGui::Separator();
+
+                ImGui::Text(" ");
+                
+                ImGui::SetCursorPosX(20);
+                ImGui::Checkbox("Tension Color", &g.tension_color_only);
+                ImGui::Text(" ");
+                ImGui::Text(" ");
+
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Instructions"))
+            {
+                ImGui::Text(" ");
+                ImGui::Text("  Left/Right - rotate side to side");
+                ImGui::Text("  Up/Down    - rotate up and down");
+                ImGui::Text("  square brackets to roll");
+                ImGui::Text(" ");
+                ImGui::Text("  Space      - play/pause simulation");
+                ImGui::Text(" ");
+                ImGui::Text(" ");
+
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
+
+
+
+        
         ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis k", &g.chassis_k, 0.0f, 2500.0f);
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("chassis damp", &g.chassis_damp, 0.0f, 80.0f);
-
-        ImGui::Text(" ");
-        ImGui::Separator();
-        ImGui::Separator();
-        ImGui::Text("Suspension spring/damp constants");
-        ImGui::Separator();
-
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension k", &g.suspension_k, 0.0f, 1500.0f);
-        ImGui::SetCursorPosX(20);
-        ImGui::SliderFloat("suspension damp", &g.suspension_damp, 0.0f, 40.0f);
-
-        ImGui::Text(" ");
-        ImGui::Text(" ");
-        ImGui::Text(" ");
-
+        ImGui::SetCursorPosY(500);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
+        ImGui::SetCursorPosX(20);
         ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
-
-
-
-
-        //Draw a window with some instructions
-        if(instruction_window)
-        {
-            ImGui::SetNextWindowSize(ImVec2(300,250));
-            ImGui::Begin("Instructions", &instruction_window);
-
-            ImGui::Text(" ");
-            ImGui::Text("  Left/Right - rotate side to side");
-            ImGui::Text("  Up/Down    - rotate up and down");
-            ImGui::Text("  square brackets to roll");
-            ImGui::Text(" ");
-            ImGui::Text("  Space      - play/pause simulation");
-            ImGui::Text(" ");
-            ImGui::Text(" ");
-
-            ImGui::End();
-        }
-
-        //Draw a window with some instructions
-        if(rotation_window)
-        {
-            ImGui::SetNextWindowSize(ImVec2(300,250));
-            ImGui::Begin("Rotation", &rotation_window);
-
-            ImGui::Text(" ");
-            ImGui::Text(" ");
-            
-            ImGui::Separator();
-
-            ImGui::SliderFloat("phi", &phi, -6.28f, 6.28f);
-            ImGui::SliderFloat("theta", &theta, -6.28f, 6.28f);
-            ImGui::SliderFloat("roll", &roll, -6.28f, 6.28f);
-                    
-           
-            ImGui::Separator();
-            
-            ImGui::Text(" ");
-            ImGui::Text(" ");
-
-            ImGui::End();
-        }
 
 
 
