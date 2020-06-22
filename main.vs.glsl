@@ -56,6 +56,10 @@ void main()
     if(color_mode == 0)
     {
         color = vColor;
+        if(color.r > 0.9)
+            gl_PointSize = 20.0;
+        else
+            gl_PointSize = 7.0;
     }
     else
     {

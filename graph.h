@@ -997,6 +997,7 @@ void graph::display()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_BLEND);
+    glEnable(GL_PROGRAM_POINT_SIZE); // lets you set pointsize in the shader
 
     //regular colors
     color_mode();
