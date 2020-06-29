@@ -32,6 +32,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
+#include <thread>
 
 //iostream aliases
 using std::cin;
@@ -117,6 +118,12 @@ class graph
 
         //function to update physics simulation
         void update();
+
+        //threaded update
+        void threaded_update();
+        void one_thread_update(int index);
+
+
 
         //function to update the point locations/colors on the GPU, from the CPU side information
         void send_points_and_edges_to_gpu();
@@ -718,6 +725,159 @@ void graph::update()
     send_points_and_edges_to_gpu();
 
 }
+
+
+
+
+
+void graph::threaded_update()
+{
+
+    //some random direction
+    glm::vec3 direction_of_travel = glm::vec3(0,0,1); 
+
+    //static position in the noise space
+
+    //advance that offset, based on the noise speed
+    offset += noise_speed*timescale*direction_of_travel;
+
+    glm::vec3 driver_front_sample_point = offset;
+    glm::vec3 passenger_front_sample_point = offset;
+    glm::vec3 driver_rear_sample_point = offset;
+    glm::vec3 passenger_rear_sample_point = offset;
+
+    glm::vec3 temp;
+
+    temp = nodes[0].position;
+    temp.y = 0; 
+
+    driver_front_sample_point += temp;
+
+    temp = nodes[1].position;
+    temp.y = 0;
+
+    passenger_front_sample_point += temp;
+
+    temp = nodes[2].position;
+    temp.y = 0;
+
+    driver_rear_sample_point += temp;
+    
+    temp = nodes[3].position;
+    temp.y = 0;
+    
+    passenger_rear_sample_point += temp;
+        
+    //new anchor positions
+    nodes[0].position.y = nodes[0].old_position.y + noise_scale*(-0.7+p.noise(driver_front_sample_point.x, driver_front_sample_point.y, driver_front_sample_point.z));
+    nodes[1].position.y = nodes[1].old_position.y + noise_scale*(-0.7+p.noise(passenger_front_sample_point.x, passenger_front_sample_point.y, passenger_front_sample_point.z));
+    nodes[2].position.y = nodes[2].old_position.y + noise_scale*(-0.7+p.noise(driver_rear_sample_point.x, driver_rear_sample_point.y, driver_rear_sample_point.z));
+    nodes[3].position.y = nodes[3].old_position.y + noise_scale*(-0.7+p.noise(passenger_rear_sample_point.x, passenger_rear_sample_point.y, passenger_rear_sample_point.z));
+
+
+    //back up old positions and velocities for unanchored nodes
+    for(auto& n : nodes)
+    {
+        if(!n.anchored)
+        {
+            n.old_position = n.position;
+            n.old_velocity = n.velocity;
+        }
+    }
+
+
+    std::thread t0(&graph::one_thread_update, this, 0);
+    std::thread t1(&graph::one_thread_update, this, 1);
+    std::thread t2(&graph::one_thread_update, this, 2);
+    std::thread t3(&graph::one_thread_update, this, 3);
+    std::thread t4(&graph::one_thread_update, this, 4);
+    std::thread t5(&graph::one_thread_update, this, 5);
+    std::thread t6(&graph::one_thread_update, this, 6);
+    std::thread t7(&graph::one_thread_update, this, 7);
+    t0.join();
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+    t6.join();
+    t7.join();
+
+    //send your points
+    send_points_and_edges_to_gpu();
+}
+
+void graph::one_thread_update(int index)
+{
+    for(std::vector<node>::iterator n = nodes.begin()+4+index; n < nodes.end(); n+=4)
+    {
+        if(!n->anchored)
+        {
+            glm::dvec3 force(0,0,0);
+            double k = 0;
+            double d = 0;
+
+
+            //get your forces from all the connections - accumulate in force vector
+            for(uint i = 0; i < n->edges.size(); i++)
+            {
+                switch(n->edges[i].type)
+                {
+                    case CHASSIS:
+                        k = chassis_k;
+                        d = chassis_damp;
+                        break;
+                    case SUSPENSION:
+                    case SUSPENSION1:
+                        k = suspension_k;
+                        d = suspension_damp;
+                        break;
+                    case TIRE:
+                        //tbd
+                        break;
+                }
+
+                //get positions of the two nodes involved
+                glm::dvec3 my_position = n->old_position;
+                glm::dvec3 ur_position = nodes[n->edges[i].node2].anchored ?
+                    nodes[n->edges[i].node2].position :          //use 'new position' for anchored nodes (new_position is up to date)
+                    nodes[n->edges[i].node2].old_position;       //use old position for unanchored nodes (old value is what you use)
+
+                //less than 1 is shorter, greater than 1 is longer than base length
+                double spring_ratio = glm::distance(my_position, ur_position) / n->edges[i].base_length;
+
+                //spring force
+                force += -k * glm::normalize(my_position - ur_position) * (spring_ratio - 1);
+                //should this be normalized or no?
+                //force += -k * (my_position - ur_position) * (spring_ratio - 1);
+
+                //damping force
+                force -= d * n->old_velocity;
+            }
+
+            //add gravity
+            force += (double)n->mass * glm::dvec3(0,-gravity,0);
+
+            //get the resulting acceleration
+            glm::dvec3 acceleration = force/(double)n->mass;
+
+            //compute the new velocity
+            n->velocity = n->old_velocity + acceleration * (double)timescale;
+
+            //get the new position
+            n->position = n->old_position + n->velocity * (double)timescale;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
 
 void graph::send_points_and_edges_to_gpu()
 {

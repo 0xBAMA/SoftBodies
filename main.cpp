@@ -62,11 +62,12 @@ int main(int, char**)
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    /* SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI); */
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)( SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window* window = SDL_CreateWindow("SoftBodies", 75, 75, total_screen_width-150, total_screen_height-150, window_flags);
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_SetSwapInterval(0); // Enable vsync
 
     // Initialize OpenGL loader
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
@@ -102,6 +103,7 @@ int main(int, char**)
     graph g;    //the graph
 
     bool run_simulation = true;
+    bool threaded = !true;
     bool show_controls = true;
 
     float theta = -0.263;
@@ -181,6 +183,7 @@ int main(int, char**)
         ImGui::Begin("Controls", &show_controls);
 
        ImGui::Checkbox("Run simulation", &run_simulation);
+       ImGui::Checkbox("Threaded", &threaded);
 
         ImGui::SameLine();
         if(ImGui::Button("Single Step"))
@@ -301,10 +304,39 @@ int main(int, char**)
         // Rendering
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+
+
+
+        auto t1 = std::chrono::high_resolution_clock::now();
 
         //update the softbody sim
         if(run_simulation)
-            g.update();
+        {   if(threaded)
+            {  
+                g.threaded_update();
+            }
+            else
+            {
+                g.update();
+            }
+        }
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    
+        if(threaded)
+        {
+            std::cout << "threaded update took " << duration << " microseconds" << endl << std::flush;
+        }
+        else
+        {
+            std::cout << "unthreaded update took " << duration << " microseconds" << endl << std::flush;
+        }
+
+
+
 
         //update the rotation values
         g.set_rotate_phi(phi);

@@ -21,8 +21,8 @@ SOURCES += imgui.cpp imgui_demo.cpp imgui_draw.cpp imgui_widgets.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
-CXXFLAGS = -Wall -Wformat
-LIBS =
+CXXFLAGS = -Wall -Wformat -O3 -std=c++17 -pthread
+LIBS = 
 
 ##---------------------------------------------------------------------
 ## OPENGL LOADER
