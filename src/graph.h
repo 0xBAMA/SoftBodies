@@ -62,7 +62,7 @@ using std::endl;
 
 
 
-#include "shader.h"
+#include "../shaders/shader.h"
 #include "perlin.h"
 
 
@@ -236,7 +236,7 @@ graph::graph()
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
     //SHADER
-    shader = Shader("main.vs.glsl", "main.fs.glsl").Program;
+    shader = Shader("shaders/main.vs.glsl", "shaders/main.fs.glsl").Program;
 
     //get your data
     load_frame_points();
@@ -254,13 +254,13 @@ graph::graph()
 
      // Initialize the vertex position attribute from the vertex shader
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vPosition"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vPosition"), 3, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (0)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vPosition"), 3, GL_FLOAT, GL_FALSE, 0, ((GLvoid*)  (static_cast<const char*>(0) + 0)));
 
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vColor"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (num_bytes_points)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (static_cast<const char*>(0) + num_bytes_points)));
 
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vtColor"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vtColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (num_bytes_points+num_bytes_colors)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vtColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (static_cast<const char*>(0) + num_bytes_points+num_bytes_colors)));
 }
 
 void graph::add_node(float mass, glm::dvec3 position, bool anchored)

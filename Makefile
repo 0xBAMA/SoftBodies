@@ -15,9 +15,9 @@ CXX = g++
 #CXX = clang++
 
 EXE = SoftBodies
-SOURCES = main.cpp
-SOURCES += perlin.cc imgui_impl_sdl.cpp imgui_impl_opengl3.cpp
-SOURCES += imgui.cpp imgui_demo.cpp imgui_draw.cpp imgui_widgets.cpp
+SOURCES = src/main.cc
+SOURCES += src/perlin.cc src/imgui_impl_sdl.cc src/imgui_impl_opengl3.cc
+SOURCES += src/imgui.cc src/imgui_demo.cc src/imgui_draw.cc src/imgui_widgets.cc
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
@@ -48,13 +48,19 @@ endif
 ## BUILD RULES
 ##---------------------------------------------------------------------
 
-%.o:%.cpp
+%.o:src/imgui/%.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:../%.cpp
+%.o:src/%.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:../../%.cpp
+%.o:%.cc
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o:../%.cc
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o:../../%.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 %.o:../libs/gl3w/GL/%.c
