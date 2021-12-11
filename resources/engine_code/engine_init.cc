@@ -144,6 +144,33 @@ void engine::displaySetup() {
   glBindImageTexture( 0, displayTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8UI );
 }
 
+void engine::simGeometrySetup() {
+  cout << T_BLUE << "    Constructing Simulation Graph" << RESET << " .................... ";
+
+  // initialize the graph of nodes and edges, to represent the chassis
+
+  cout << T_GREEN << "done." << RESET << endl;
+
+
+
+
+  cout << T_BLUE << "    Setting up VAO, VBO for Simulation Geometry" << RESET << " ...... ";
+
+  // create VAO, VBO
+
+  cout << T_GREEN << "done." << RESET << endl;
+
+
+
+
+  cout << T_BLUE << "    Buffering Initial Simulation Geometry" << RESET << " ............ ";
+
+  // put the initial data into the VBO
+
+  cout << T_GREEN << "done." << RESET << endl;
+}
+
+
 void engine::computeShaderCompile() {
 
   // compile any compute shaders here, store handles in engine class member function variables

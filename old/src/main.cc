@@ -41,7 +41,7 @@ int main(int, char**)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1); 
+    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 8);
 
 
@@ -159,12 +159,12 @@ int main(int, char**)
 
                 if(event.key.keysym.sym == SDLK_s)
                 {index--; g.set_highlight_index(index); g.send_points_and_edges_to_gpu(); cout << index << endl;}
-                
+
 
                 //toggle simulation running every frame
                 if(event.key.keysym.sym == SDLK_SPACE)
                     run_simulation = !run_simulation;
-                
+
                 // if(event.key.keysym.sym == SDLK_x)
                 //
 
@@ -213,9 +213,9 @@ int main(int, char**)
                 ImGui::Text("Simulation general settings");
                 ImGui::Separator();
                 ImGui::SetCursorPosX(20);
-                ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.1f);
+                ImGui::SliderFloat("time step", &g.timescale, 0.0f, 0.01f);
                 ImGui::SetCursorPosX(20);
-                ImGui::SliderFloat("gravity", &g.gravity, -2.0f, 3.0f);
+                ImGui::SliderFloat("gravity", &g.gravity, -4.0f, 4.0f);
                 ImGui::SetCursorPosX(20);
                 ImGui::SliderFloat("noise scale", &g.noise_scale, 0, 1.0f);
                 ImGui::SetCursorPosX(20);
@@ -260,11 +260,11 @@ int main(int, char**)
                 ImGui::SliderFloat("theta", &theta, -6.28f, 6.28f);
                 ImGui::SetCursorPosX(20);
                 ImGui::SliderFloat("roll", &roll, -6.28f, 6.28f);
-                    
+
                 ImGui::Separator();
 
                 ImGui::Text(" ");
-                
+
                 ImGui::SetCursorPosX(20);
                 ImGui::Checkbox("Tension Color", &g.tension_color_only);
                 ImGui::Text(" ");
@@ -290,7 +290,7 @@ int main(int, char**)
 
 
 
-        
+
         ImGui::SetCursorPosX(20);
         ImGui::SetCursorPosY(500);
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -304,7 +304,7 @@ int main(int, char**)
         // Rendering
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
 
 
 
@@ -313,7 +313,7 @@ int main(int, char**)
         //update the softbody sim
         if(run_simulation)
         {   if(threaded)
-            {  
+            {
                 g.threaded_update();
             }
             else
@@ -325,7 +325,7 @@ int main(int, char**)
         auto t2 = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    
+
         if(threaded)
         {
             std::cout << "threaded update took " << duration << " microseconds" << endl << std::flush;
@@ -342,7 +342,7 @@ int main(int, char**)
         g.set_rotate_phi(phi);
         g.set_rotate_theta(theta);
         g.set_rotate_roll(roll);
-        
+
         g.display();
         ImGui::Render();
 

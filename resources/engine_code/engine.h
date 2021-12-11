@@ -2,6 +2,7 @@
 #define ENGINE
 
 #include "includes.h"
+#include "model.h"
 
 class engine {
 public:
@@ -23,13 +24,16 @@ private:
   GLuint displayShader;
 	GLuint displayVAO;
 	GLuint displayVBO;
-  // objLoader o; // wrapper for TinyOBJLoader
+
+  // SoftBody Simulation Model
+  model simulationModel;
 
   // initialization
   void init();
   void startMessage();
 	void createWindowAndContext();
   void displaySetup();
+  void simGeometrySetup();
   void computeShaderCompile();
   void imguiSetup();
 

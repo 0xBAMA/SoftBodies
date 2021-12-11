@@ -9,19 +9,20 @@ bool engine::mainLoop() {
 
 
   /* ---------------------------------------------------------------------------
-  have to think about how this is going to be structured, with multiple threads
-    need to make sure that all the worker threads have finished, and then send the new vertex data to the GPU to render
-
+    I have to think about how this is going to be structured, with multiple threads need
+  to make sure that all the worker threads have finished, and then send the new vertex
+  data to the GPU to render, with the data after the simulation update is completed
 
   the way this will work:
-    make sure the simulation update is finished, for all threads - all threads should be in the waiting state
-    update the contents of the VBO
-    render the output, the same way as was done in the old iteration of the project
+    - make sure the simulation update is finished, for all threads - all threads should
+      be in the waiting state
+    - update the contents of the VBO
+    - render the output, the same way as was done in the old iteration of the project
 
-
-  I want to get this working first, just as practice with multithreading concepts, and then I want to figure out doing it entirely on the GPU
-  once this is taking place on the GPU, I can do all of the rendering straight out of the same SSBO that is being used to compute the physics
-  and skip the VBO buffering entirely
+    I want to get this working first, just as practice with multithreading concepts, and
+  then I want to figure out doing it entirely on the GPU - once this is taking place on
+  the GPU, I can do all of the rendering straight out of the same SSBO that is being used
+  to compute the physics and skip the VBO buffering entirely
   --------------------------------------------------------------------------- */
 
 

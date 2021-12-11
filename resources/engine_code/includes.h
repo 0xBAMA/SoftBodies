@@ -83,4 +83,24 @@ using json = nlohmann::json;
 #define WIDTH 640
 #define HEIGHT 480
 
+
+// default colors to use
+#define BLACK  glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+
+#define BLUE   glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+#define RED    glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
+
+#define TAN    glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+#define YELLOW glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+#define BROWN  glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+#define GREEN  glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+
+#define G0     glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+#define G1     glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f ); // fix
+#define BG     glm::vec4( 0.4f, 0.3f, 0.1f, 1.0f );
+
+
+
+
+
 #endif

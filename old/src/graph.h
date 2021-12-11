@@ -181,7 +181,7 @@ class graph
         void color_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),0);}
         void tcolor_mode() {glUniform1i(glGetUniformLocation(shader,"color_mode"),1);}
 
-        float timescale = 0.01f;
+        float timescale = 0.003f;
         float gravity = -2.0f;
         float noise_scale = 0.088f;
         float noise_speed = 5.0f;
@@ -277,7 +277,6 @@ void graph::add_node(float mass, glm::dvec3 position, bool anchored)
     temp.edges.clear();
 
     nodes.push_back(temp);
-
 }
 
 void graph::add_edge(int node1, int node2, edgetype type)
@@ -1043,15 +1042,15 @@ void graph::send_points_and_edges_to_gpu()
 
 
 
-#define NUM_STEPS_LR 100
-#define NUM_STEPS_FB 100
+#define NUM_STEPS_LR 150
+#define NUM_STEPS_FB 150
 
 //#define FRONT_EXTENT
   ground_start = points.size();
     float noise_read;
 
-  for(double horizontal = -0.65; horizontal <= 0.65; horizontal += 1.3/NUM_STEPS_LR)
-      for(double vertical = -0.9; vertical <= 0.9; vertical += 1.8/NUM_STEPS_FB)
+  for(double horizontal = -0.618; horizontal <= 0.618; horizontal += ( 2. * 0.618 ) / NUM_STEPS_LR)
+      for(double vertical = -1.; vertical <= 1.; vertical += 2./NUM_STEPS_FB)
       {
         noise_read = p.noise(horizontal + offset.x, 0, vertical + offset.z);
         points.push_back(glm::vec3(horizontal, -0.2+noise_scale*(-0.7+noise_read), vertical));
@@ -1059,7 +1058,7 @@ void graph::send_points_and_edges_to_gpu()
         tcolors.push_back(glm::vec4(noise_read));
       }
 
-    /*
+/*
   for(double horizontal = -0.05; horizontal <= 0.05; horizontal += 0.1/NUM_STEPS_LR)
       for(double vertical = -0.0618; vertical <= 0.0618; vertical += 0.13/NUM_STEPS_FB)
       {
@@ -1104,7 +1103,7 @@ void graph::send_points_and_edges_to_gpu()
     std::uniform_real_distribution<float> disx(-0.5, 0.5);
     std::uniform_real_distribution<float> disz(-0.9, 0.9);
 
-    std::uniform_real_distribution<float> dish(-0.03, 0.02);
+    std::uniform_real_distribution<float> dish(0.03, 0.09);
     std::uniform_real_distribution<float> disc(-0.1, 0.1);
 
 
@@ -1130,12 +1129,10 @@ void graph::send_points_and_edges_to_gpu()
         tcolors.push_back(glm::vec4(noise_read));
 
     }
-
     */
 
-
-
   ground_num = points.size() - ground_start;
+
 
 
   num_bytes_points = points.size() * sizeof(glm::vec3);
@@ -1180,6 +1177,7 @@ void graph::display()
     glPointSize(7.0f);
     glDrawArrays(GL_POINTS, nodes_start, nodes_num);
 
-    glPointSize(2.0f);
+    // ground surface
+    glPointSize(1.2f);
     glDrawArrays(GL_POINTS, ground_start, ground_num);
 }

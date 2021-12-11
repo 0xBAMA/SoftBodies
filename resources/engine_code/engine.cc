@@ -7,6 +7,7 @@ void engine::init() {
   createWindowAndContext();
   glDebugEnable();
   displaySetup();
+  simGeometrySetup();
   computeShaderCompile();
   imguiSetup();
 }
