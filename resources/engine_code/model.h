@@ -21,6 +21,11 @@ struct edge {
   int node1, node2;                   // indices the nodes on either end of the edge
 };
 
+struct face {
+  int node1, node2, node3;            // the three points making up the triangle
+  glm::vec3 normal;                   // surface normal for the triangle
+};
+
 struct node {
   float mass;                         // mass of node
   bool anchored;                      // anchored nodes are control points
@@ -100,6 +105,7 @@ private:
   // called from loadFramePoints
   void addNode();
   void addEdge();
+  void addFace();
 
   // keeping the state of each thread
   threadState workerState[ numThreads ];

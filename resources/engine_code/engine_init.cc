@@ -146,27 +146,15 @@ void engine::displaySetup() {
 
 void engine::simGeometrySetup() {
   cout << T_BLUE << "    Constructing Simulation Graph" << RESET << " .................... ";
-
-  // initialize the graph of nodes and edges, to represent the chassis
-
+  simulationModel.loadFramePoints();     // initialize the graph of nodes and edges, to represent the chassis
   cout << T_GREEN << "done." << RESET << endl;
-
-
-
 
   cout << T_BLUE << "    Setting up VAO, VBO for Simulation Geometry" << RESET << " ...... ";
-
-  // create VAO, VBO
-
+  simulationModel.GPUSetup();            // create VAO, VBO
   cout << T_GREEN << "done." << RESET << endl;
 
-
-
-
   cout << T_BLUE << "    Buffering Initial Simulation Geometry" << RESET << " ............ ";
-
-  // put the initial data into the VBO
-
+  simulationModel.passNewGPUData();      // put the initial data into the VBO
   cout << T_GREEN << "done." << RESET << endl;
 }
 
