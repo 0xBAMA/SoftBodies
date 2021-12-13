@@ -92,7 +92,6 @@ public:
   bool allThreadComplete();           // iterate through thread array, return false if any thread is WORKING
 
 
-
   // simulation and display parameter structs
   simParameterPack simParameters;
   displayParameterPack displayParameters;
