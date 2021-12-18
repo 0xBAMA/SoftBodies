@@ -169,9 +169,7 @@ class graph
           float total_screen_height = dm.h - 150;
 
           float AR = total_screen_width/total_screen_height;
-
           glm::mat4 proj = glm::perspective(glm::radians(65.0f), AR, 0.0f, 10.0f);
-
           glUniformMatrix4fv(glGetUniformLocation(shader, "perspective"), 1, GL_TRUE, glm::value_ptr(proj));
         }
 
@@ -213,8 +211,6 @@ class graph
         int nodes_start, nodes_num;
         int ground_start, ground_num;
 
-
-
         uint highlight_index = 0;
 
         std::vector<node> nodes;
@@ -254,13 +250,13 @@ graph::graph()
 
      // Initialize the vertex position attribute from the vertex shader
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vPosition"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vPosition"), 3, GL_FLOAT, GL_FALSE, 0, ((GLvoid*)  (static_cast<const char*>(0) + 0)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vColor"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (static_cast<const char*>(0) + num_bytes_points)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vColor"), 4, GL_FLOAT, GL_FALSE, 0, ( const GLvoid* ) num_bytes_points );
 
      glEnableVertexAttribArray(glGetAttribLocation(shader, "vtColor"));
-     glVertexAttribPointer(glGetAttribLocation(shader, "vtColor"), 4, GL_FLOAT, GL_FALSE, 0, ((GLvoid*) (static_cast<const char*>(0) + num_bytes_points+num_bytes_colors)));
+     glVertexAttribPointer(glGetAttribLocation(shader, "vtColor"), 4, GL_FLOAT, GL_FALSE, 0, ( const GLvoid* ) ( num_bytes_points + num_bytes_colors ) );
 }
 
 void graph::add_node(float mass, glm::dvec3 position, bool anchored)

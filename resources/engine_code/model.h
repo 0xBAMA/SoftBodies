@@ -27,7 +27,7 @@ struct face {
 };
 
 struct node {
-  float mass;                         // mass of node
+  float* mass;                        // pointer to mass of node ( easy runtime update )
   bool anchored;                      // anchored nodes are control points
   glm::vec3 position, oldPosition;    // current and previous position values
   glm::vec3 velocity, oldVelocity;    // current and previous velocity values
@@ -36,6 +36,7 @@ struct node {
 
 // consolidate simulation parameters
 struct simParameterPack {
+  bool  runSimulation       = true;   // toggle per frame update
   float timescale           = 0.003;  // amount of time that passes per sim tick
   float gravity             = -2.0;   // scales the contribution of force of gravity
 
@@ -71,8 +72,11 @@ struct displayParameterPack {
   glm::vec4 groundLow       = G0;     // color of the ground at lowest point
   glm::vec4 groundHigh      = G1;     // color of the ground at highest point
   glm::vec4 background      = BG;     // OpenGL clear color
-};
 
+  float theta               = -0.25f; // theta euler angle
+  float phi                 = 2.186f; // phi euler angle
+  float roll                = 0.035f; // additional roll parameter
+};
 
 class model {
 public:
@@ -96,6 +100,7 @@ public:
   // to query sim completion
   bool allThreadComplete();           // iterate through thread array, return false if any thread is WORKING
 
+  void colorModeSelect( int mode );   // the set of drawing colors to use
 
   // simulation and display parameter structs
   simParameterPack simParameters;
@@ -103,9 +108,14 @@ public:
 
 private:
   // called from loadFramePoints
-  void addNode();
-  void addEdge();
+  void addNode( float* mass, glm::vec3 position, bool anchored );
+  void addEdge( int nodeIndex1, int nodeIndex2, edgeType type );
   void addFace();
+
+  // sim / display data
+  std::vector< node > nodes;
+  std::vector< edge > edges;
+  std::vector< face > faces;
 
   // keeping the state of each thread
   threadState workerState[ numThreads ];
@@ -114,6 +124,7 @@ private:
   GLuint simGeometryVAO;
   GLuint simGeometryVBO;
   GLuint simGeometryShader;
+  GLuint bodyPanelShader;
 };
 
 
