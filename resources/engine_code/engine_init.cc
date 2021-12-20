@@ -85,9 +85,9 @@ void engine::displaySetup() {
   // a small speedup and it is Good Practice.
 
   glm::vec3 points[] = {
-    glm::vec3(-1, -1, 0.5), // A
-    glm::vec3( 3, -1, 0.5), // B
-    glm::vec3(-1,  3, 0.5)  // C
+    glm::vec3(-1, -1, 0.99), // A
+    glm::vec3( 3, -1, 0.99), // B
+    glm::vec3(-1,  3, 0.99)  // C
   };
 
   // VAO, VBO

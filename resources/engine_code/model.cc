@@ -53,13 +53,18 @@ void model::loadFramePoints() {
     } else if ( read == "f" ) {
 
       char throwaway;
-      int xindex, yindex, zindex, nindex;
-      infile >> xindex >> throwaway >> throwaway >> nindex
-             >> yindex >> throwaway >> throwaway >> nindex
-             >> zindex >> throwaway >> throwaway >> nindex;
+      int xIndex, yIndex, zIndex, nIndex;
+      infile >> xIndex >> throwaway >> throwaway >> nIndex
+             >> yIndex >> throwaway >> throwaway >> nIndex
+             >> zIndex >> throwaway >> throwaway >> nIndex;
 
       // this needs the three node indices, as well as the normal from the normals list
-      // addFace( , normals[ nindex - 1 ] );
+      addFace( xIndex + offset, yIndex + offset, zIndex + offset, normals[ nIndex - 1 ] );
+
+      // add the three edges of the triangle, since the obj export skips edges which are included in a face
+      addEdge( xIndex + offset, yIndex + offset, CHASSIS );
+      addEdge( zIndex + offset, yIndex + offset, CHASSIS );
+      addEdge( zIndex + offset, xIndex + offset, CHASSIS );
 
     } else if ( read == "l" ) {
 
@@ -86,48 +91,101 @@ void model::GPUSetup() {
   glBindBuffer( GL_ARRAY_BUFFER, simGeometryVBO );
 
   // SHADER for points, edges - from old implementation
-  simGeometryShader = Shader( "old/shaders/main.vs.glsl", "old/shaders/main.fs.glsl" ).Program;
+  simGeometryShader = Shader( "resources/engine_code/shaders/main.vs.glsl", "resources/engine_code/shaders/main.fs.glsl" ).Program;
 
   // shader for faces - flat shading - todo
-
+  // bodyPanelShader = Shader();
 }
 
 void model::passNewGPUData() {
+  // populate the arrays out of the edge and node data
   std::vector< glm::vec3 > points;
   std::vector< glm::vec4 > colors;
   std::vector< glm::vec4 > tColors;
 
+  // nodes
+  drawParameters.nodesBase = points.size();
+  for( auto n : nodes )
+    points.push_back( n.position * displayParameters.scale ),
+    colors.push_back( GREEN ),
+    tColors.push_back( glm::vec4( 0. ) );
+  drawParameters.nodesNum = points.size() - drawParameters.nodesBase;
 
+  // edges
+  drawParameters.edgesBase = points.size();
+  for( auto e : edges ) {
+    points.push_back( nodes[ e.node1 ].position * displayParameters.scale );
+    points.push_back( nodes[ e.node2 ].position * displayParameters.scale );
+    switch( e.type ) {
+      case CHASSIS:
+        colors.push_back( GREEN );
+        colors.push_back( GREEN );
+        break;
+      case SUSPENSION:
+        colors.push_back( TAN );
+        colors.push_back( TAN );
+        break;
+      case SUSPENSION1:
+        colors.push_back( BROWN );
+        colors.push_back( BROWN );
+        break;
+      default: break;
+    }
+    tColors.push_back( BLACK );
+    tColors.push_back( BLACK );
+  }
+  drawParameters.edgesNum = points.size() - drawParameters.edgesBase;
 
+  // faces
+  drawParameters.facesBase = points.size();
+  for( auto f : faces ) {
+    // bring it in a touch, less collision with the chassis edges
+    points.push_back( nodes[ f.node1 ].position * displayParameters.scale * 0.99f );
+    points.push_back( nodes[ f.node2 ].position * displayParameters.scale * 0.99f );
+    points.push_back( nodes[ f.node3 ].position * displayParameters.scale * 0.99f );
 
+    colors.push_back( GREEN );
+    colors.push_back( GREEN );
+    colors.push_back( GREEN );
 
-  int numBytesPoints  =  points.size() * sizeof( glm::vec3 );
-  int numBytesColors  =  colors.size() * sizeof( glm::vec4 );
-  int numBytesTColors = tColors.size() * sizeof( glm::vec4 );
+    tColors.push_back( BLACK );
+    tColors.push_back( BLACK );
+    tColors.push_back( BLACK );
+  }
+  drawParameters.facesNum = points.size() - drawParameters.facesBase;
+
 
   // buffer the data to the GPU
+  uintptr_t numBytesPoints  =  points.size() * sizeof( glm::vec3 );
+  uintptr_t numBytesColors  =  colors.size() * sizeof( glm::vec4 );
+  uintptr_t numBytesTColors = tColors.size() * sizeof( glm::vec4 );
 
-
+  // send it
+  glBufferData(GL_ARRAY_BUFFER, numBytesPoints + numBytesColors + numBytesTColors, NULL, GL_DYNAMIC_DRAW);
+  uint bufferbase = 0;
+  glBufferSubData(GL_ARRAY_BUFFER, bufferbase, numBytesPoints, &points[0]);
+  bufferbase += numBytesPoints;
+  glBufferSubData(GL_ARRAY_BUFFER, bufferbase, numBytesColors, &colors[0]);
+  bufferbase += numBytesColors;
+  glBufferSubData(GL_ARRAY_BUFFER, bufferbase, numBytesTColors, &tColors[0]);
 
 
   // set up the pointers to the vertex data
-
-  GLvoid* vPositionBase = 0;
+  GLvoid* base = 0;
   glEnableVertexAttribArray( glGetAttribLocation( simGeometryShader, "vPosition" ));
-  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vPosition" ), 3, GL_FLOAT, GL_FALSE, 0, vPositionBase );
+  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vPosition" ), 3, GL_FLOAT, GL_FALSE, 0, base );
 
-  GLvoid* vColorBase = ( GLvoid* ) numBytesPoints;
+  base = ( GLvoid* ) numBytesPoints;
   glEnableVertexAttribArray( glGetAttribLocation( simGeometryShader, "vColor" ));
-  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vColor" ), 4, GL_FLOAT, GL_FALSE, 0, vColorBase );
+  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vColor" ), 4, GL_FLOAT, GL_FALSE, 0, base );
 
-  GLvoid* tColorBase = ( GLvoid* ) ( numBytesPoints + numBytesColors );
+  base = ( GLvoid* ) ( numBytesPoints + numBytesColors );
   glEnableVertexAttribArray( glGetAttribLocation( simGeometryShader, "vtColor" ));
-  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vtColor" ), 4, GL_FLOAT, GL_FALSE, 0, tColorBase );
-
+  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vtColor" ), 4, GL_FLOAT, GL_FALSE, 0, base );
 }
 
 void model::colorModeSelect( int mode ) {
-
+  glUniform1i( glGetUniformLocation( simGeometryShader, "color_mode" ), mode );
 }
 
 void model::updateUniforms() {
@@ -135,11 +193,20 @@ void model::updateUniforms() {
   SDL_GetDesktopDisplayMode(0, &dm);
 
   float AR = float( dm.w ) / float( dm.h );
-  glm::mat4 proj = glm::perspective( glm::radians( 65.0f ), AR, 0.0f, 10.0f );
+  glm::mat4 proj = glm::perspective( glm::radians( 65.0f ), AR, 10.0f, 10.0f );
 
   glUniformMatrix4fv( glGetUniformLocation( simGeometryShader, "perspective" ), 1, GL_TRUE, glm::value_ptr( proj ) );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "aspect_ratio" ), 1, &AR );
+
+
+  // rotation parameters
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "theta"), 1, &displayParameters.theta );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "phi"), 1, &displayParameters.phi );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "roll"), 1, &displayParameters.roll );
+
+
 }
+
 
 void model::update() {
 
@@ -150,14 +217,36 @@ void model::display() {
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_LINE_SMOOTH );
   glEnable( GL_BLEND );
-  glEnable( GL_PROGRAM_POINT_SIZE ); // lets you set pointsize in the shader
-
-  // clear the buffer - color, depth
+  glEnable( GL_PROGRAM_POINT_SIZE ); // lets you set pointsize in the shader - for suspension point select
 
   // use the first shader / VAO / VBO to draw the lines, points
-    // regular colors - this is the chassis segments
-    // tension colors / black outlines
-    // chassis nodes
+  glUseProgram( simGeometryShader );
+  glBindVertexArray(simGeometryVAO );
+  glBindBuffer( GL_ARRAY_BUFFER, simGeometryVBO );
+
+  updateUniforms();
+
+  // body panels
+  colorModeSelect( 2 );
+  glDrawArrays( GL_TRIANGLES, drawParameters.facesBase, drawParameters.facesNum );
+
+
+  // chassis nodes
+  colorModeSelect( 0 );
+  glPointSize( 16.0f );
+  glDrawArrays( GL_POINTS, drawParameters.nodesBase, drawParameters.nodesNum );
+
+  // regular colors - this is the chassis segments
+  glLineWidth( 10.0f );
+  glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+
+  // tension colors / black outlines
+  colorModeSelect( 1 );
+  glLineWidth( 13.0f );
+  glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+
+
+
     // points on the ground surface
 
   // use the other shader / VAO / VBO to do flat shaded polygons for the body panels
@@ -174,13 +263,26 @@ void model::addNode( float* mass, glm::vec3 position, bool anchored ) {
   n.anchored = anchored;
   n.position = n.oldPosition = position;
   n.velocity = n.oldVelocity = glm::vec3( 0.0 );
+  nodes.push_back( n );
 }
 
 void model::addEdge( int nodeIndex1, int nodeIndex2, edgeType type ) {
-
+  edge e;
+  e.node1 = nodeIndex1;
+  e.node2 = nodeIndex2;
+  e.type = type;
+  e.baseLength = glm::distance( nodes[ e.node1 ].position, nodes[ e.node2 ].position );
+  edges.push_back( e );
 }
 
 // parameters tbd - probably just the
-void model::addFace() {
+void model::addFace( int nodeIndex1, int nodeIndex2, int nodeIndex3, glm::vec3 normal ) {
+  face f;
+  f.node1 = nodeIndex1;
+  f.node2 = nodeIndex2;
+  f.node3 = nodeIndex3;
 
+  // TODO: add normals
+
+  faces.push_back( f );
 }

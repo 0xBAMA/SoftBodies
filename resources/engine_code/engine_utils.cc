@@ -26,13 +26,18 @@ bool engine::mainLoop() {
   --------------------------------------------------------------------------- */
 
 
-
   // compute passes
     // invoke any shaders you want to use to do work on the GPU
 
 
+  // clear color and depth info
+  clear();
+
   // fullscreen triangle copying the image
   mainDisplay();
+
+  // run the display function for the model data
+  simulationModel.display();
 
   // do all the gui stuff
   imguiPass();
@@ -47,11 +52,13 @@ bool engine::mainLoop() {
   return pQuit;
 }
 
-void engine::mainDisplay() {
+void engine::clear() {
   // clear the screen
   glClearColor( clearColor.x, clearColor.y, clearColor.z, clearColor.w ); // from hsv picker
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+}
 
+void engine::mainDisplay() {
   // texture display
   glUseProgram( displayShader );
   glBindVertexArray( displayVAO );
@@ -59,7 +66,7 @@ void engine::mainDisplay() {
 
   ImGuiIO &io = ImGui::GetIO();
   glUniform2f( glGetUniformLocation( displayShader, "resolution"), io.DisplaySize.x, io.DisplaySize.y );
-  glDrawArrays( GL_TRIANGLES, 0, 3 );
+  glDrawArrays( GL_TRIANGLES, 0, 3 ); // the fullscreen triangle
 }
 
 void engine::imguiPass() {
@@ -93,5 +100,11 @@ void engine::handleEvents() {
 
     if ( event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE && SDL_GetModState() & KMOD_SHIFT )
       pQuit = true; // force quit on shift+esc ( bypasses confirm window )
+
+
+    // keyboard controls for model orientation
+
+
+
   }
 }

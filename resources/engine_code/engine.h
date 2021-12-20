@@ -38,6 +38,7 @@ private:
   void imguiSetup();
 
   // main loop functions
+  void clear();
   void mainDisplay();
   void handleEvents();
   void imguiPass();

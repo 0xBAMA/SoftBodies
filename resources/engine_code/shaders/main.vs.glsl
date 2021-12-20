@@ -6,13 +6,11 @@ in vec4 vtColor;
 
 //color mode = 0 is just use regular colors
 //color mode = 1 is to use the tension/compression colors
-// uniform int color_mode;
+uniform int color_mode;
 
-// uniform float theta;
-// uniform float phi;
-// uniform float roll;
-
-int color_mode = 0;
+uniform float theta;
+uniform float phi;
+uniform float roll;
 
 uniform float aspect_ratio;
 uniform mat4 perspective;
@@ -55,16 +53,27 @@ void main()
     gl_Position.x /= aspect_ratio;
     // gl_Position *= perspective;
 
+
+
+
+
+
+
     if(color_mode == 0)
     {
+        gl_Position.z -= 0.0001;
         color = vColor;
         if(color.r > 0.9)
             gl_PointSize = 20.0;
         else
             gl_PointSize = 7.0;
     }
-    else
+    else if( color_mode == 1)
     {
         color = vtColor;
+    }
+    else {
+      color = vColor;
+
     }
 }

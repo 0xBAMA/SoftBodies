@@ -85,19 +85,19 @@ using json = nlohmann::json;
 
 
 // default colors to use
-#define BLACK  glm::vec4( 0.00, 0.00, 0.00, 1.00 );
+#define BLACK  glm::vec4( 0.00, 0.00, 0.00, 1.00 )
 
-#define BLUE   glm::vec4( 0.50, 0.00, 0.00, 1.00 );
-#define RED    glm::vec4( 0.00, 0.00, 0.50, 1.00 );
+#define BLUE   glm::vec4( 0.50, 0.00, 0.00, 1.00 )
+#define RED    glm::vec4( 0.00, 0.00, 0.50, 1.00 )
 
-#define TAN    glm::vec4( 0.45, 0.35, 0.22, 1.00 );
-#define YELLOW glm::vec4( 0.43, 0.36, 0.11, 1.00 );
-#define BROWN  glm::vec4( 0.30, 0.20, 0.10, 1.00 );
-#define GREEN  glm::vec4( 0.25, 0.28, 0.00, 1.00 );
+#define TAN    glm::vec4( 0.45, 0.35, 0.22, 1.00 )
+#define YELLOW glm::vec4( 0.43, 0.36, 0.11, 1.00 )
+#define BROWN  glm::vec4( 0.30, 0.20, 0.10, 1.00 )
+#define GREEN  glm::vec4( 0.25, 0.28, 0.00, 1.00 )
 
-#define G0     glm::vec4( 0.35, 0.23, 0.04, 1.00 );
-#define G1     glm::vec4( 0.42, 0.46, 0.14, 1.00 );
-#define BG     glm::vec4( 0.40, 0.30, 0.10, 1.00 );
+#define G0     glm::vec4( 0.35, 0.23, 0.04, 1.00 )
+#define G1     glm::vec4( 0.42, 0.46, 0.14, 1.00 )
+#define BG     glm::vec4( 0.40, 0.30, 0.10, 1.00 )
 
 
 

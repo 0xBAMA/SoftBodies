@@ -76,6 +76,20 @@ struct displayParameterPack {
   float theta               = -0.25f; // theta euler angle
   float phi                 = 2.186f; // phi euler angle
   float roll                = 0.035f; // additional roll parameter
+
+  float scale               = 0.44f;   // scales the frame points, about zero
+};
+
+struct drawParameterPack {
+  // nodes
+  GLuint nodesBase;
+  GLuint nodesNum;
+  // edges
+  GLuint edgesBase;
+  GLuint edgesNum;
+  // faces
+  GLuint facesBase;
+  GLuint facesNum;
 };
 
 class model {
@@ -105,12 +119,13 @@ public:
   // simulation and display parameter structs
   simParameterPack simParameters;
   displayParameterPack displayParameters;
+  drawParameterPack drawParameters;
 
 private:
   // called from loadFramePoints
   void addNode( float* mass, glm::vec3 position, bool anchored );
   void addEdge( int nodeIndex1, int nodeIndex2, edgeType type );
-  void addFace();
+  void addFace( int nodeIndex1, int nodeIndex2, int nodeIndex3, glm::vec3 normal );
 
   // sim / display data
   std::vector< node > nodes;
