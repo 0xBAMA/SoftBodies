@@ -69,6 +69,31 @@ void engine::drawTextEditor() {
   ImGui::End();
 }
 
+void engine::showConfigWindow() {
+  ImGui::Begin( "Model Config", NULL, 0 );
+  if ( ImGui::BeginTabBar( "Config Sections", ImGuiTabBarFlags_None ) ) {
+    if ( ImGui::BeginTabItem( "Simulation" ) ) {
+      // HelpMarker( "Softbody Simulation Model" );
+
+      ImGui::EndTabItem();
+    }
+    if ( ImGui::BeginTabItem( "Render" ) ) {
+      ImGui::Checkbox( "Draw Body Panels", &simulationModel.displayParameters.showChassisFaces );
+      ImGui::Checkbox( "Draw Chassis Edges", &simulationModel.displayParameters.showChassisEdges );
+      ImGui::Checkbox( "Draw Chassis Nodes", &simulationModel.displayParameters.showChassisNodes );
+      ImGui::Checkbox( "Draw Suspension Edges", &simulationModel.displayParameters.showSuspensionEdges );
+      ImGui::Text(" ");
+      ImGui::Checkbox( "Tension Color Only", &simulationModel.displayParameters.tensionColorOnly );
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Chassis Rescale", &simulationModel.displayParameters.chassisRescaleAmnt, 0.8f, 1.1f );
+
+      ImGui::EndTabItem();
+    }
+    ImGui::EndTabBar();
+  }
+  ImGui::End();
+}
+
 void engine::imguiFrameStart() {
   // Start the Dear ImGui frame
   ImGui_ImplOpenGL3_NewFrame();

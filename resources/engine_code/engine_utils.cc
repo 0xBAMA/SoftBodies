@@ -37,6 +37,7 @@ bool engine::mainLoop() {
   mainDisplay();
 
   // run the display function for the model data
+  simulationModel.update();
   simulationModel.display();
 
   // do all the gui stuff
@@ -59,12 +60,10 @@ void engine::clear() {
 }
 
 void engine::mainDisplay() {
+  ImGuiIO &io = ImGui::GetIO();
+
   // texture display
   glUseProgram( displayShader );
-  glBindVertexArray( displayVAO );
-  glBindBuffer( GL_ARRAY_BUFFER, displayVBO );
-
-  ImGuiIO &io = ImGui::GetIO();
   glUniform2f( glGetUniformLocation( displayShader, "resolution"), io.DisplaySize.x, io.DisplaySize.y );
   glDrawArrays( GL_TRIANGLES, 0, 3 ); // the fullscreen triangle
 }
@@ -74,6 +73,10 @@ void engine::imguiPass() {
   imguiFrameStart();
 
   // settings window, for the simulation parameters
+  // ImGui::ShowDemoWindow( NULL );
+
+  showConfigWindow();
+
 
   // show quit confirm window
   quitConf( &quitConfirm );
@@ -103,7 +106,20 @@ void engine::handleEvents() {
 
 
     // keyboard controls for model orientation
+    if ( event.key.keysym.sym == SDLK_RIGHT )
+      simulationModel.displayParameters.phi += 0.01;
+    if ( event.key.keysym.sym == SDLK_LEFT )
+      simulationModel.displayParameters.phi -= 0.01;
 
+    if ( event.key.keysym.sym == SDLK_UP )
+      simulationModel.displayParameters.theta += 0.01;
+    if ( event.key.keysym.sym == SDLK_DOWN )
+      simulationModel.displayParameters.theta -= 0.01;
+
+    if ( event.key.keysym.sym == SDLK_RIGHTBRACKET )
+      simulationModel.displayParameters.roll += 0.01;
+    if ( event.key.keysym.sym == SDLK_LEFTBRACKET )
+      simulationModel.displayParameters.roll -= 0.01;
 
 
   }

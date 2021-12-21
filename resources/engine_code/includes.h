@@ -94,6 +94,7 @@ using json = nlohmann::json;
 #define YELLOW glm::vec4( 0.43, 0.36, 0.11, 1.00 )
 #define BROWN  glm::vec4( 0.30, 0.20, 0.10, 1.00 )
 #define GREEN  glm::vec4( 0.25, 0.28, 0.00, 1.00 )
+#define STEEL  glm::vec4( 0.15, 0.24, 0.26, 1.00 )
 
 #define G0     glm::vec4( 0.35, 0.23, 0.04, 1.00 )
 #define G1     glm::vec4( 0.42, 0.46, 0.14, 1.00 )

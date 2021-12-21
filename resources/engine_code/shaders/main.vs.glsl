@@ -61,7 +61,7 @@ void main()
 
     if(color_mode == 0)
     {
-        gl_Position.z -= 0.0001;
+        gl_Position.z -= 0.001;
         color = vColor;
         if(color.r > 0.9)
             gl_PointSize = 20.0;
@@ -74,6 +74,7 @@ void main()
     }
     else {
       color = vColor;
+      gl_Position.z += 0.001;
 
     }
 }

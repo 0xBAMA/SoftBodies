@@ -22,8 +22,6 @@ private:
   // OpenGL data
   GLuint displayTexture;
   GLuint displayShader;
-	GLuint displayVAO;
-	GLuint displayVBO;
 
   // SoftBody Simulation Model
   model simulationModel;
@@ -42,6 +40,7 @@ private:
   void mainDisplay();
   void handleEvents();
   void imguiPass();
+  void showConfigWindow();
   void imguiFrameStart();
   void imguiFrameEnd();
   void drawTextEditor();
@@ -55,7 +54,6 @@ private:
   // program flags
 	bool quitConfirm = false;
 	bool pQuit = false;
-
 };
 
 #endif

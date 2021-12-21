@@ -118,21 +118,21 @@ void model::passNewGPUData() {
     points.push_back( nodes[ e.node2 ].position * displayParameters.scale );
     switch( e.type ) {
       case CHASSIS:
-        colors.push_back( GREEN );
-        colors.push_back( GREEN );
+        colors.push_back( displayParameters.chassisColor );
+        colors.push_back( displayParameters.chassisColor );
         break;
       case SUSPENSION:
-        colors.push_back( TAN );
-        colors.push_back( TAN );
+        colors.push_back( displayParameters.suspColor );
+        colors.push_back( displayParameters.suspColor );
         break;
       case SUSPENSION1:
-        colors.push_back( BROWN );
-        colors.push_back( BROWN );
+        colors.push_back( displayParameters.susp1Color );
+        colors.push_back( displayParameters.susp1Color );
         break;
       default: break;
     }
-    tColors.push_back( BLACK );
-    tColors.push_back( BLACK );
+    tColors.push_back( BLACK ); // this will become a mapping that involves length and baselength
+    tColors.push_back( BLACK );   // for the edge as well as the compColor and tensColor
   }
   drawParameters.edgesNum = points.size() - drawParameters.edgesBase;
 
@@ -140,13 +140,13 @@ void model::passNewGPUData() {
   drawParameters.facesBase = points.size();
   for( auto f : faces ) {
     // bring it in a touch, less collision with the chassis edges
-    points.push_back( nodes[ f.node1 ].position * displayParameters.scale * 0.99f );
-    points.push_back( nodes[ f.node2 ].position * displayParameters.scale * 0.99f );
-    points.push_back( nodes[ f.node3 ].position * displayParameters.scale * 0.99f );
+    points.push_back( nodes[ f.node1 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
+    points.push_back( nodes[ f.node2 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
+    points.push_back( nodes[ f.node3 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
 
-    colors.push_back( GREEN );
-    colors.push_back( GREEN );
-    colors.push_back( GREEN );
+    colors.push_back( displayParameters.faceColor );
+    colors.push_back( displayParameters.faceColor );
+    colors.push_back( displayParameters.faceColor );
 
     tColors.push_back( BLACK );
     tColors.push_back( BLACK );
@@ -209,7 +209,7 @@ void model::updateUniforms() {
 
 
 void model::update() {
-
+  passNewGPUData();
 }
 
 void model::display() {
@@ -221,30 +221,38 @@ void model::display() {
 
   // use the first shader / VAO / VBO to draw the lines, points
   glUseProgram( simGeometryShader );
-  glBindVertexArray(simGeometryVAO );
+  glBindVertexArray( simGeometryVAO );
   glBindBuffer( GL_ARRAY_BUFFER, simGeometryVBO );
 
   updateUniforms();
 
-  // body panels
-  colorModeSelect( 2 );
-  glDrawArrays( GL_TRIANGLES, drawParameters.facesBase, drawParameters.facesNum );
-
 
   // chassis nodes
-  colorModeSelect( 0 );
-  glPointSize( 16.0f );
-  glDrawArrays( GL_POINTS, drawParameters.nodesBase, drawParameters.nodesNum );
+  if ( displayParameters.showChassisNodes ) {
+    colorModeSelect( 0 );
+    glPointSize( 16.0f );
+    glDrawArrays( GL_POINTS, drawParameters.nodesBase, drawParameters.nodesNum );
+  }
 
-  // regular colors - this is the chassis segments
-  glLineWidth( 10.0f );
-  glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+  // body panels
+  if ( displayParameters.showChassisFaces ) {
+    colorModeSelect( 2 );
+    glDrawArrays( GL_TRIANGLES, drawParameters.facesBase, drawParameters.facesNum );
+  }
 
-  // tension colors / black outlines
-  colorModeSelect( 1 );
-  glLineWidth( 13.0f );
-  glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+  if ( displayParameters.showChassisEdges ) {
+    if ( !displayParameters.tensionColorOnly ) {
+      // regular colors - this is the chassis segments
+      colorModeSelect( 0 );
+      glLineWidth( 10.0f );
+      glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+    }
 
+    // tension colors / black outlines
+    colorModeSelect( 1 );
+    glLineWidth( 13.0f );
+    glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
+  }
 
 
     // points on the ground surface

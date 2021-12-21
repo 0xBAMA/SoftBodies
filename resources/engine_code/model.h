@@ -17,7 +17,7 @@ enum edgeType {
 
 struct edge {
   edgeType type;                      // references global values of k, damping values
-  float baseLength;                   // edge length, used to determine compression / extension
+  float length, baseLength;           // current and initial edge length, used to determine compression / tension state
   int node1, node2;                   // indices the nodes on either end of the edge
 };
 
@@ -54,18 +54,20 @@ struct simParameterPack {
 // consolidate display parameters
 struct displayParameterPack {
   bool tensionColorOnly     = false;  // outlines are colored red in compression, blue in tension ( default )
+  bool showChassisNodes     = true;   // show points associated with the chassis nodes
   bool showChassisEdges     = true;   // show lines associated with the chassis edges
   bool showSuspensionEdges  = true;   // show the lines associated with suspension edges
-  bool showChassisFaces     = false;  // add this to the model, triangles using the same nodes as the edges
+  bool showChassisFaces     = true;   // add this to the model, triangles using the same nodes as the edges
 
   float depthColorScale     = 1.0;    // adjust the weight of the depth coloring
+  float chassisRescaleAmnt  = 0.985f; // scales the polygons, to interfere with the lines less
 
   glm::vec4 outlineColor    = BLACK;  // the highlight color if tensionColor is off
   glm::vec4 compColor       = RED;    // the highlight color of the edges in compression ( tensionColor mode )
   glm::vec4 tensColor       = BLUE;   // the highlight color of the edges in tension ( tensionColor mode )
 
   glm::vec4 faceColor       = TAN;    // color of the chassis faces
-  glm::vec4 chassisColor    = GREEN;  // color of the chassis members
+  glm::vec4 chassisColor    = STEEL;  // color of the chassis members
   glm::vec4 suspColor       = YELLOW; // color of the suspension members
   glm::vec4 susp1Color      = BROWN;  // color of the inboard suspension members
 
@@ -77,7 +79,7 @@ struct displayParameterPack {
   float phi                 = 2.186f; // phi euler angle
   float roll                = 0.035f; // additional roll parameter
 
-  float scale               = 0.44f;   // scales the frame points, about zero
+  float scale               = 0.42f;  // scales the frame points, about zero
 };
 
 struct drawParameterPack {
