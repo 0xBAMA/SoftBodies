@@ -60,10 +60,10 @@ void engine::drawTextEditor() {
 
   // add dropdown for different shaders?
   ImGui::Text( "%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1,
-              cpos.mColumn + 1, editor.GetTotalLines(),
-              editor.IsOverwrite() ? "Ovr" : "Ins",
-              editor.CanUndo() ? "*" : " ",
-              editor.GetLanguageDefinition().mName.c_str(), fileToEdit );
+    cpos.mColumn + 1, editor.GetTotalLines(),
+    editor.IsOverwrite() ? "Ovr" : "Ins",
+    editor.CanUndo() ? "*" : " ",
+    editor.GetLanguageDefinition().mName.c_str(), fileToEdit );
 
   editor.Render( "Editor" );
   ImGui::End();
@@ -72,21 +72,45 @@ void engine::drawTextEditor() {
 void engine::showConfigWindow() {
   ImGui::Begin( "Model Config", NULL, 0 );
   if ( ImGui::BeginTabBar( "Config Sections", ImGuiTabBarFlags_None ) ) {
+    ImGui::SameLine();
+    HelpMarker( "Softbody Simulation Model" );
     if ( ImGui::BeginTabItem( "Simulation" ) ) {
-      // HelpMarker( "Softbody Simulation Model" );
-
+      ImGui::SliderFloat( "Time Scale", &simulationModel.simParameters.timeScale, 0.0f, 0.01f );
+      ImGui::SliderFloat( "Gravity", &simulationModel.simParameters.timeScale, -5.0f, 5.0f );
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Noise Amplitude", &simulationModel.simParameters.noiseAmplitudeScale, 0.0f, 1.0f );
+      ImGui::SliderFloat( "Noise Speed", &simulationModel.simParameters.noiseSpeed, 0.0f, 10.0f );
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Chassis Node Mass", &simulationModel.simParameters.chassisNodeMass, 0.1f, 10.0f );
+      ImGui::SliderFloat( "Chassis K", &simulationModel.simParameters.chassisKConstant, 0.0f, 3000.0f );
+      ImGui::SliderFloat( "Chassis Damping", &simulationModel.simParameters.chassisDamping, 0.0f, 100.0f );
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Suspension K", &simulationModel.simParameters.suspensionKConstant, 0.0f, 3000.0f );
+      ImGui::SliderFloat( "Suspension Damping", &simulationModel.simParameters.suspensionDamping, 0.0f, 100.0f );
       ImGui::EndTabItem();
     }
     if ( ImGui::BeginTabItem( "Render" ) ) {
+      ImGui::Text("Geometry Toggles");
+      ImGui::Separator();
       ImGui::Checkbox( "Draw Body Panels", &simulationModel.displayParameters.showChassisFaces );
       ImGui::Checkbox( "Draw Chassis Edges", &simulationModel.displayParameters.showChassisEdges );
       ImGui::Checkbox( "Draw Chassis Nodes", &simulationModel.displayParameters.showChassisNodes );
       ImGui::Checkbox( "Draw Suspension Edges", &simulationModel.displayParameters.showSuspensionEdges );
       ImGui::Text(" ");
+      ImGui::Text("Drawing Mode");
+      ImGui::Separator();
       ImGui::Checkbox( "Tension Color Only", &simulationModel.displayParameters.tensionColorOnly );
       ImGui::Text(" ");
+      ImGui::Text("Scaling");
+      ImGui::Separator();
+      ImGui::SliderFloat( "Global Scale", &simulationModel.displayParameters.scale, 0.25f, 0.75f );
+      ImGui::Text(" ");
       ImGui::SliderFloat( "Chassis Rescale", &simulationModel.displayParameters.chassisRescaleAmnt, 0.8f, 1.1f );
-
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Line Scale", &simulationModel.drawParameters.lineScale, 1.0f, 20.0f );
+      ImGui::SliderFloat( "Outline Ratio", &simulationModel.drawParameters.outlineRatio, 0.8f, 2.0f );
+      ImGui::Text(" ");
+      ImGui::SliderFloat( "Point Scale", &simulationModel.drawParameters.pointScale, 0.8f, 20.0f );
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();

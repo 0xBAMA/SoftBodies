@@ -8,9 +8,9 @@ in vec4 vtColor;
 //color mode = 1 is to use the tension/compression colors
 // uniform int color_mode;
 
-// uniform float theta;
-// uniform float phi;
-// uniform float roll;
+uniform float theta;
+uniform float phi;
+uniform float roll;
 
 int color_mode = 0;
 

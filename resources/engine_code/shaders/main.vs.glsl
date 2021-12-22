@@ -8,6 +8,11 @@ in vec4 vtColor;
 //color mode = 1 is to use the tension/compression colors
 uniform int color_mode;
 
+
+// point highlight - gl_PointSize must be set in all cases if it is set at all
+uniform float defaultPointSize;
+uniform int nodeSelect;
+
 uniform float theta;
 uniform float phi;
 uniform float roll;
@@ -19,8 +24,7 @@ out vec4 color;
 out vec3 position;
 
 //thanks to Neil Mendoza via http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
-mat3 rotationMatrix(vec3 axis, float angle)
-{
+mat3 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
     float s = sin(angle);
     float c = cos(angle);
@@ -53,28 +57,21 @@ void main()
     gl_Position.x /= aspect_ratio;
     // gl_Position *= perspective;
 
+    if ( color_mode == 0 ) {
+      gl_Position.z -= 0.001;
+      color = vColor;
 
+      if ( gl_VertexID == nodeSelect ) { // highlight
+        gl_PointSize = 1.618 * defaultPointSize;
+        color = vec4( 1.0, 0.0, 0.0, 1.0 );
+      } else {
+        gl_PointSize = defaultPointSize;
+      }
 
-
-
-
-
-    if(color_mode == 0)
-    {
-        gl_Position.z -= 0.001;
-        color = vColor;
-        if(color.r > 0.9)
-            gl_PointSize = 20.0;
-        else
-            gl_PointSize = 7.0;
-    }
-    else if( color_mode == 1)
-    {
-        color = vtColor;
-    }
-    else {
+    } else if ( color_mode == 1 ) {
+      color = vtColor;
+    } else {
       color = vColor;
       gl_Position.z += 0.001;
-
     }
 }

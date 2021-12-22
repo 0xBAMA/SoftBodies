@@ -37,7 +37,7 @@ struct node {
 // consolidate simulation parameters
 struct simParameterPack {
   bool  runSimulation       = true;   // toggle per frame update
-  float timescale           = 0.003;  // amount of time that passes per sim tick
+  float timeScale           = 0.003;  // amount of time that passes per sim tick
   float gravity             = -2.0;   // scales the contribution of force of gravity
 
   float noiseAmplitudeScale = 0.1;    // scalar on the noise amplitude
@@ -46,6 +46,7 @@ struct simParameterPack {
   float chassisKConstant    = 1430.0; // hooke's law spring constant for chassis edges
   float chassisDamping      = 31.3;   // damping factor for chassis edges
   float chassisNodeMass     = 3.0;    // mass of a chassis node
+  float anchoredNodeMass    = 0.0;    // mass of an anchored node
 
   float suspensionKConstant = 790.0;  // hooke's law spring constant for suspension edges
   float suspensionDamping   = 5.22;   // damping factor for suspension edges
@@ -79,10 +80,11 @@ struct displayParameterPack {
   float phi                 = 2.186f; // phi euler angle
   float roll                = 0.035f; // additional roll parameter
 
-  float scale               = 0.42f;  // scales the frame points, about zero
+  float scale               = 0.4f;   // scales the frame points, about zero
 };
 
 struct drawParameterPack {
+// VBO indexing
   // nodes
   GLuint nodesBase;
   GLuint nodesNum;
@@ -92,12 +94,25 @@ struct drawParameterPack {
   // faces
   GLuint facesBase;
   GLuint facesNum;
+  // ground
+  GLuint groundBase;
+  GLuint groundNum;
+
+  // lines scaling
+  float lineScale           = 10.0f;
+  float outlineRatio        = 1.3f;
+
+  // point scaling
+  float pointScale          = 16.0f;
+
 };
 
 class model {
 public:
   model();
   ~model();
+
+  int nodeSelect = 0;
 
   // graph init
   void loadFramePoints();             // populate graph with nodes and edges

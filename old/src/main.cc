@@ -102,7 +102,7 @@ int main(int, char**)
 
     graph g;    //the graph
 
-    bool run_simulation = true;
+    bool run_simulation = false;
     bool threaded = !true;
     bool show_controls = true;
 

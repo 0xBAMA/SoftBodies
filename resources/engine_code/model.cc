@@ -24,60 +24,47 @@ void model::loadFramePoints() {
   std::vector< glm::vec3 > normals;
 
   // add the anchored points ( wheel control points )
-  int offset = -1; // for 4 anchored wheel points, this is 3 - to eat up the off-by-one from the one-indexed OBJ format
+  int offset = 3; // for 4 anchored wheel points, this is 3 - to eat up the off-by-one from the one-indexed OBJ format
 
   // add anchored wheel control points here
-
-
+  addNode( &simParameters.anchoredNodeMass, glm::vec3( -0.6125f, -0.38f,  1.95f ),  true ); // front left
+  addNode( &simParameters.anchoredNodeMass, glm::vec3(  0.6125f, -0.38f,  1.95f ),  true ); // front right
+  addNode( &simParameters.anchoredNodeMass, glm::vec3( -0.7f,    -0.38f, -0.86f ),  true ); // back left
+  addNode( &simParameters.anchoredNodeMass, glm::vec3(  0.7f,    -0.38f, -0.86f ),  true ); // back right
 
   while ( infile.peek() != EOF ) {
     std::string read;
     infile >> read;
 
     if ( read == "v" ) {
-
       float x, y, z;
       infile >> x >> y >> z;
-
       // add an unanchored node, with the configured node mass
       addNode( &simParameters.chassisNodeMass, glm::vec3( x, y, z ), false );
-
     } else if ( read == "vn" ) {
-
       float x, y, z;
       infile >> x >> y >> z;
-
-      // three floats determine the normal vector
-      normals.push_back( glm::vec3( x, y, z ) );
-
+      normals.push_back( glm::vec3( x, y, z ) );  // three floats determine the normal vector
     } else if ( read == "f" ) {
-
       char throwaway;
       int xIndex, yIndex, zIndex, nIndex;
       infile >> xIndex >> throwaway >> throwaway >> nIndex
              >> yIndex >> throwaway >> throwaway >> nIndex
              >> zIndex >> throwaway >> throwaway >> nIndex;
-
       // this needs the three node indices, as well as the normal from the normals list
       addFace( xIndex + offset, yIndex + offset, zIndex + offset, normals[ nIndex - 1 ] );
-
       // add the three edges of the triangle, since the obj export skips edges which are included in a face
       addEdge( xIndex + offset, yIndex + offset, CHASSIS );
       addEdge( zIndex + offset, yIndex + offset, CHASSIS );
       addEdge( zIndex + offset, xIndex + offset, CHASSIS );
-
     } else if ( read == "l" ) {
-
       int index1, index2;
       infile >> index1 >> index2;
-
-      // two node indices ( offset to match the list ), CHASSIS type
-      addEdge( index1 + offset, index2 + offset, CHASSIS );
-
+      addEdge( index1 + offset, index2 + offset, CHASSIS ); // two node indices ( offset to match the list ), CHASSIS type
     }
   }
-
   // add suspension points here
+
 
 }
 
@@ -190,7 +177,7 @@ void model::colorModeSelect( int mode ) {
 
 void model::updateUniforms() {
   SDL_DisplayMode dm;
-  SDL_GetDesktopDisplayMode(0, &dm);
+  SDL_GetDesktopDisplayMode( 0, &dm );
 
   float AR = float( dm.w ) / float( dm.h );
   glm::mat4 proj = glm::perspective( glm::radians( 65.0f ), AR, 10.0f, 10.0f );
@@ -198,13 +185,16 @@ void model::updateUniforms() {
   glUniformMatrix4fv( glGetUniformLocation( simGeometryShader, "perspective" ), 1, GL_TRUE, glm::value_ptr( proj ) );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "aspect_ratio" ), 1, &AR );
 
+  // point size and point highlight
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "defaultPointSize"), 1, &drawParameters.pointScale );
+  glUniform1i( glGetUniformLocation( simGeometryShader, "nodeSelect" ), nodeSelect );
 
   // rotation parameters
   glUniform1fv( glGetUniformLocation( simGeometryShader, "theta"), 1, &displayParameters.theta );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "phi"), 1, &displayParameters.phi );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "roll"), 1, &displayParameters.roll );
 
-
+  // if ( ++nodeSelect == 4 ) nodeSelect = 0;
 }
 
 
@@ -230,7 +220,6 @@ void model::display() {
   // chassis nodes
   if ( displayParameters.showChassisNodes ) {
     colorModeSelect( 0 );
-    glPointSize( 16.0f );
     glDrawArrays( GL_POINTS, drawParameters.nodesBase, drawParameters.nodesNum );
   }
 
@@ -244,13 +233,13 @@ void model::display() {
     if ( !displayParameters.tensionColorOnly ) {
       // regular colors - this is the chassis segments
       colorModeSelect( 0 );
-      glLineWidth( 10.0f );
+      glLineWidth( drawParameters.lineScale );
       glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
     }
 
     // tension colors / black outlines
     colorModeSelect( 1 );
-    glLineWidth( 13.0f );
+    glLineWidth( drawParameters.outlineRatio * drawParameters.lineScale );
     glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
   }
 

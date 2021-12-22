@@ -64,7 +64,7 @@ void engine::mainDisplay() {
 
   // texture display
   glUseProgram( displayShader );
-  glUniform2f( glGetUniformLocation( displayShader, "resolution"), io.DisplaySize.x, io.DisplaySize.y );
+  glUniform2f( glGetUniformLocation( displayShader, "resolution" ), io.DisplaySize.x, io.DisplaySize.y );
   glDrawArrays( GL_TRIANGLES, 0, 3 ); // the fullscreen triangle
 }
 
@@ -121,6 +121,16 @@ void engine::handleEvents() {
     if ( event.key.keysym.sym == SDLK_LEFTBRACKET )
       simulationModel.displayParameters.roll -= 0.01;
 
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_MINUS) {
+      if( --simulationModel.nodeSelect < int( simulationModel.drawParameters.nodesBase ) )
+        simulationModel.nodeSelect = simulationModel.drawParameters.nodesNum - 1;
+      cout << simulationModel.nodeSelect << endl;
+    }
 
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_EQUALS) { // SDLK_PLUS reqires shift
+      if( ++simulationModel.nodeSelect >= int( simulationModel.drawParameters.nodesNum ) )
+        simulationModel.nodeSelect = 0;
+      cout << simulationModel.nodeSelect << endl;
+    }
   }
 }
