@@ -81,8 +81,7 @@ void engine::displaySetup() {
 
   // fill with random values
   std::default_random_engine gen;
-  std::uniform_int_distribution<uint8_t> dist( 150, 255 );
-  std::uniform_int_distribution<uint8_t> dist2( 12, 45 );
+  std::uniform_int_distribution<uint8_t> dist( 1, 25 );
 
   for ( auto it = imageData.begin(); it != imageData.end(); it++ )
     *it = dist( gen );

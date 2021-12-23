@@ -106,19 +106,19 @@ void engine::handleEvents() {
 
 
     // keyboard controls for model orientation
-    if ( event.key.keysym.sym == SDLK_RIGHT )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RIGHT )
       simulationModel.displayParameters.phi += 0.01;
-    if ( event.key.keysym.sym == SDLK_LEFT )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_LEFT )
       simulationModel.displayParameters.phi -= 0.01;
 
-    if ( event.key.keysym.sym == SDLK_UP )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_UP )
       simulationModel.displayParameters.theta += 0.01;
-    if ( event.key.keysym.sym == SDLK_DOWN )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_DOWN )
       simulationModel.displayParameters.theta -= 0.01;
 
-    if ( event.key.keysym.sym == SDLK_RIGHTBRACKET )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RIGHTBRACKET )
       simulationModel.displayParameters.roll += 0.01;
-    if ( event.key.keysym.sym == SDLK_LEFTBRACKET )
+    if ( event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_LEFTBRACKET )
       simulationModel.displayParameters.roll -= 0.01;
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_MINUS) {

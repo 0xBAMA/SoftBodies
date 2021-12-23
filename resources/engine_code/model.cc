@@ -63,9 +63,86 @@ void model::loadFramePoints() {
       addEdge( index1 + offset, index2 + offset, CHASSIS ); // two node indices ( offset to match the list ), CHASSIS type
     }
   }
-  // add suspension points here
+// suspension edge
+  // front left
+  addEdge( 0, 25, SUSPENSION );
+  addEdge( 0, 35, SUSPENSION );
+  addEdge( 0, 37, SUSPENSION );
+  addEdge( 0, 39, SUSPENSION );
+  addEdge( 0, 41, SUSPENSION );
+  addEdge( 0, 42, SUSPENSION );
+  addEdge( 0, 43, SUSPENSION );
+  addEdge( 0, 44, SUSPENSION );
+  addEdge( 0, 45, SUSPENSION );
+  // mirrored SUSPENSION1 edges
+  addEdge( 0, 13, SUSPENSION1 );
+  addEdge( 0, 15, SUSPENSION1 );
+  addEdge( 0, 17, SUSPENSION1 );
+  addEdge( 0, 19, SUSPENSION1 );
+  addEdge( 0, 20, SUSPENSION1 );
+  addEdge( 0, 21, SUSPENSION1 );
+  addEdge( 0, 22, SUSPENSION1 );
+  addEdge( 0, 23, SUSPENSION1 );
+  addEdge( 0, 24, SUSPENSION1 );
 
+  // front right
+  addEdge( 1, 13, SUSPENSION );
+  addEdge( 1, 15, SUSPENSION );
+  addEdge( 1, 17, SUSPENSION );
+  addEdge( 1, 19, SUSPENSION );
+  addEdge( 1, 20, SUSPENSION );
+  addEdge( 1, 21, SUSPENSION );
+  addEdge( 1, 22, SUSPENSION );
+  addEdge( 1, 23, SUSPENSION );
+  addEdge( 1, 24, SUSPENSION );
+  // mirrored SUSPENSION1 edges
+  addEdge( 1, 35, SUSPENSION1 );
+  addEdge( 1, 25, SUSPENSION1 );
+  addEdge( 1, 37, SUSPENSION1 );
+  addEdge( 1, 39, SUSPENSION1 );
+  addEdge( 1, 41, SUSPENSION1 );
+  addEdge( 1, 42, SUSPENSION1 );
+  addEdge( 1, 43, SUSPENSION1 );
+  addEdge( 1, 44, SUSPENSION1 );
+  addEdge( 1, 45, SUSPENSION1 );
 
+  // back left
+  addEdge( 2, 26, SUSPENSION );
+  addEdge( 2, 28, SUSPENSION );
+  addEdge( 2, 29, SUSPENSION );
+  addEdge( 2, 30, SUSPENSION );
+  addEdge( 2, 31, SUSPENSION );
+  addEdge( 2, 32, SUSPENSION );
+  addEdge( 2, 36, SUSPENSION );
+  addEdge( 2, 38, SUSPENSION );
+  // mirrored SUSPENSION1 edges
+  addEdge( 2, 4, SUSPENSION1 );
+  addEdge( 2, 6, SUSPENSION1 );
+  addEdge( 2, 7, SUSPENSION1 );
+  addEdge( 2, 8, SUSPENSION1 );
+  addEdge( 2, 9, SUSPENSION1 );
+  addEdge( 2, 10, SUSPENSION1 );
+  addEdge( 2, 14, SUSPENSION1 );
+  addEdge( 2, 16, SUSPENSION1 );
+
+  // back right
+  addEdge( 3, 4, SUSPENSION );
+  addEdge( 3, 6, SUSPENSION );
+  addEdge( 3, 7, SUSPENSION );
+  addEdge( 3, 8, SUSPENSION );
+  addEdge( 3, 9, SUSPENSION );
+  addEdge( 3, 10, SUSPENSION );
+  addEdge( 3, 14, SUSPENSION );
+  addEdge( 3, 16, SUSPENSION );
+  // mirrored SUSPENSION1 edges
+  addEdge( 3, 26, SUSPENSION1 );
+  addEdge( 3, 28, SUSPENSION1 );
+  addEdge( 3, 29, SUSPENSION1 );
+  addEdge( 3, 30, SUSPENSION1 );
+  addEdge( 3, 31, SUSPENSION1 );
+  addEdge( 3, 32, SUSPENSION1 );
+  addEdge( 3, 36, SUSPENSION1 );
+  addEdge( 3, 38, SUSPENSION1 );
 }
 
 void model::GPUSetup() {
@@ -94,7 +171,7 @@ void model::passNewGPUData() {
   drawParameters.nodesBase = points.size();
   for( auto n : nodes )
     points.push_back( n.position * displayParameters.scale ),
-    colors.push_back( GREEN ),
+    colors.push_back( STEEL ),
     tColors.push_back( glm::vec4( 0. ) );
   drawParameters.nodesNum = points.size() - drawParameters.nodesBase;
 

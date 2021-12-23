@@ -67,7 +67,7 @@ struct displayParameterPack {
   glm::vec4 compColor       = RED;    // the highlight color of the edges in compression ( tensionColor mode )
   glm::vec4 tensColor       = BLUE;   // the highlight color of the edges in tension ( tensionColor mode )
 
-  glm::vec4 faceColor       = TAN;    // color of the chassis faces
+  glm::vec4 faceColor       = GREEN;  // color of the chassis faces
   glm::vec4 chassisColor    = STEEL;  // color of the chassis members
   glm::vec4 suspColor       = YELLOW; // color of the suspension members
   glm::vec4 susp1Color      = BROWN;  // color of the inboard suspension members
