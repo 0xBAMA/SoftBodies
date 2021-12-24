@@ -4,9 +4,11 @@ in vec3 vPosition;
 in vec4 vColor;
 in vec4 vtColor;
 
-//color mode = 0 is just use regular colors
-//color mode = 1 is to use the tension/compression colors
-uniform int color_mode;
+// mode 0 is for points
+// mode 1 is for the colored lines
+// mode 2 is to use the tension/compression colors / outlines
+// mode 3 is for triangles
+uniform int colorMode;
 
 
 // point highlight - gl_PointSize must be set in all cases if it is set at all
@@ -57,21 +59,31 @@ void main()
     gl_Position.x /= aspect_ratio;
     // gl_Position *= perspective;
 
-    if ( color_mode == 0 ) {
-      gl_Position.z -= 0.001;
-      color = vColor;
 
-      if ( gl_VertexID == nodeSelect ) { // highlight
-        gl_PointSize = 1.618 * defaultPointSize;
-        color = vec4( 1.0, 0.0, 0.0, 1.0 );
-      } else {
-        gl_PointSize = defaultPointSize;
-      }
+    switch ( colorMode ) {
+      case 0: // points
+        gl_Position.z -= 0.001;
+        if ( gl_VertexID == nodeSelect ) { // highlight
+          gl_PointSize = 1.618 * defaultPointSize;
+          color = vec4( 1.0, 0.0, 0.0, 1.0 );
+        } else {
+          gl_PointSize = defaultPointSize;
+          color = vColor;
+        }
+        break;
 
-    } else if ( color_mode == 1 ) {
-      color = vtColor;
-    } else {
-      color = vColor;
-      gl_Position.z += 0.001;
-    }
+      case 1: // regular lines
+        gl_Position.z -= 0.001;
+        color = vColor;
+        break;
+
+      case 2: // outline lines
+        color = vtColor;
+        break;
+
+      case 3: // triangles
+        color = vColor;
+        gl_Position.z += 0.001;
+        break;
+  }
 }

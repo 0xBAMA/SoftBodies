@@ -163,23 +163,41 @@ void model::GPUSetup() {
 
 void model::passNewGPUData() {
   // populate the arrays out of the edge and node data
-  std::vector< glm::vec3 > points;
+  std::vector< glm::vec4 > points;
   std::vector< glm::vec4 > colors;
   std::vector< glm::vec4 > tColors;
 
-  // nodes
+  // chassis nodes
   drawParameters.nodesBase = points.size();
   for( auto n : nodes )
-    points.push_back( n.position * displayParameters.scale ),
+    points.push_back( glm::vec4( n.position * displayParameters.scale, 10.0 ) ),
     colors.push_back( STEEL ),
     tColors.push_back( glm::vec4( 0. ) );
+
+  // the ground nodes
+  const int noiseDimX = 150;
+  const int noiseDimY = 75;
+  static auto fnGenerator = FastNoise::New< FastNoise::Perlin > ();
+  static std::vector< float > noiseSamples ( noiseDimX * noiseDimY );
+  fnGenerator->GenUniformGrid2D( noiseSamples.data(), 0, 0, noiseDimX, noiseDimY, 0.015, 42069 );
+  for ( int x = 0; x < noiseDimX; x++ ) {
+    for ( int y = 0; y < noiseDimY; y++ ) {
+      float xMapped = ( float( x ) / float( noiseDimX ) ) - 0.5;
+      float yMapped = ( float( y ) / float( noiseDimY ) ) - 0.5;
+      points.push_back( glm::vec4( xMapped, yMapped, noiseSamples[ x + y * noiseDimX ], 10.0f ) );
+      colors.push_back( glm::vec4( 0.0f ) );
+      tColors.push_back( glm::vec4( 0.0f ) );
+    }
+  }
+
+  // end of points
   drawParameters.nodesNum = points.size() - drawParameters.nodesBase;
 
   // edges
   drawParameters.edgesBase = points.size();
   for( auto e : edges ) {
-    points.push_back( nodes[ e.node1 ].position * displayParameters.scale );
-    points.push_back( nodes[ e.node2 ].position * displayParameters.scale );
+    points.push_back( glm::vec4( nodes[ e.node1 ].position * displayParameters.scale, 10.0 ) );
+    points.push_back( glm::vec4( nodes[ e.node2 ].position * displayParameters.scale, 10.0 ) );
     switch( e.type ) {
       case CHASSIS:
         colors.push_back( displayParameters.chassisColor );
@@ -204,9 +222,9 @@ void model::passNewGPUData() {
   drawParameters.facesBase = points.size();
   for( auto f : faces ) {
     // bring it in a touch, less collision with the chassis edges
-    points.push_back( nodes[ f.node1 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
-    points.push_back( nodes[ f.node2 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
-    points.push_back( nodes[ f.node3 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt );
+    points.push_back( glm::vec4( nodes[ f.node1 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt, 10.0 ) );
+    points.push_back( glm::vec4( nodes[ f.node2 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt, 10.0 ) );
+    points.push_back( glm::vec4( nodes[ f.node3 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt, 10.0 ) );
 
     colors.push_back( displayParameters.faceColor );
     colors.push_back( displayParameters.faceColor );
@@ -220,7 +238,7 @@ void model::passNewGPUData() {
 
 
   // buffer the data to the GPU
-  uintptr_t numBytesPoints  =  points.size() * sizeof( glm::vec3 );
+  uintptr_t numBytesPoints  =  points.size() * sizeof( glm::vec4 );
   uintptr_t numBytesColors  =  colors.size() * sizeof( glm::vec4 );
   uintptr_t numBytesTColors = tColors.size() * sizeof( glm::vec4 );
 
@@ -237,7 +255,7 @@ void model::passNewGPUData() {
   // set up the pointers to the vertex data
   GLvoid* base = 0;
   glEnableVertexAttribArray( glGetAttribLocation( simGeometryShader, "vPosition" ));
-  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vPosition" ), 3, GL_FLOAT, GL_FALSE, 0, base );
+  glVertexAttribPointer( glGetAttribLocation( simGeometryShader, "vPosition" ), 4, GL_FLOAT, GL_FALSE, 0, base );
 
   base = ( GLvoid* ) numBytesPoints;
   glEnableVertexAttribArray( glGetAttribLocation( simGeometryShader, "vColor" ));
@@ -249,7 +267,7 @@ void model::passNewGPUData() {
 }
 
 void model::colorModeSelect( int mode ) {
-  glUniform1i( glGetUniformLocation( simGeometryShader, "color_mode" ), mode );
+  glUniform1i( glGetUniformLocation( simGeometryShader, "colorMode" ), mode );
 }
 
 void model::updateUniforms() {
@@ -293,7 +311,6 @@ void model::display() {
 
   updateUniforms();
 
-
   // chassis nodes
   if ( displayParameters.showChassisNodes ) {
     colorModeSelect( 0 );
@@ -302,20 +319,20 @@ void model::display() {
 
   // body panels
   if ( displayParameters.showChassisFaces ) {
-    colorModeSelect( 2 );
+    colorModeSelect( 3 );
     glDrawArrays( GL_TRIANGLES, drawParameters.facesBase, drawParameters.facesNum );
   }
 
   if ( displayParameters.showChassisEdges ) {
     if ( !displayParameters.tensionColorOnly ) {
       // regular colors - this is the chassis segments
-      colorModeSelect( 0 );
+      colorModeSelect( 1 );
       glLineWidth( drawParameters.lineScale );
       glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
     }
 
     // tension colors / black outlines
-    colorModeSelect( 1 );
+    colorModeSelect( 2 );
     glLineWidth( drawParameters.outlineRatio * drawParameters.lineScale );
     glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
   }
@@ -357,6 +374,8 @@ void model::addFace( int nodeIndex1, int nodeIndex2, int nodeIndex3, glm::vec3 n
   f.node3 = nodeIndex3;
 
   // TODO: add normals
+
+
 
   faces.push_back( f );
 }
