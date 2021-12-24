@@ -5,7 +5,13 @@
 #include <string>
 
 model::model() {
+  auto fnSimplex = FastNoise::New<FastNoise::Simplex>();
+  auto fnFractal = FastNoise::New<FastNoise::FractalFBm>();
 
+  fnFractal->SetSource( fnSimplex );
+  fnFractal->SetOctaveCount( 5 );
+
+  fnGenerator = fnFractal;
 }
 
 model::~model() {
@@ -184,7 +190,7 @@ void model::passNewGPUData() {
 
       // glm::vec4 sampleColor = groundHeight * displayParameters.groundHigh + ( 1.0f - groundHeight ) * displayParameters.groundLow;
 
-      glm::vec4 sampleColor = glm::vec4( x, y, 0.0f, 1.0f );
+      glm::vec4 sampleColor = glm::vec4( ( x + 1.0f ) / 2.0f, ( y + 1.5f ) / 3.0f, 0.0f, 1.0f );
 
       colors.push_back( glm::vec4( sampleColor.xyz(), 1.0f ) );
 

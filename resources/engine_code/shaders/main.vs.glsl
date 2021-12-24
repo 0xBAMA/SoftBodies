@@ -59,6 +59,8 @@ void main() {
 
     // gl_Position.z += 1.;
 
+    float d = 1.5 - distance( vec3( 0. ), vPosition.xyz );
+
 
     switch ( colorMode ) {
       case 0: // points
@@ -69,6 +71,7 @@ void main() {
         } else {
           gl_PointSize = vPosition.a;
           color = vColor;
+          color.a *= d;
         }
         break;
 
