@@ -52,14 +52,13 @@ void main() {
     position *= roll_mat;
 
 
-    // gl_Position = vec4( ( perspective * vec4( position, 0.0 ) ).xyz, 1.0 );
+    // position = ( perspective * vec4( position, 1.0 ) ).xyz;
+
     gl_Position = vec4( position, 1.0 );
     gl_Position.x /= aspect_ratio;
-    // gl_Position *= perspective;
-
     // gl_Position.z += 1.;
 
-    float d = 1.5 - distance( vec3( 0. ), vPosition.xyz );
+    // float d = 1.5 - distance( vec3( 0. ), vPosition.xyz );
 
 
     switch ( colorMode ) {
@@ -71,7 +70,7 @@ void main() {
         } else {
           gl_PointSize = vPosition.a;
           color = vColor;
-          color.a *= d;
+          // color.a *= d;
         }
         break;
 

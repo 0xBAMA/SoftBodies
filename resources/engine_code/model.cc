@@ -19,6 +19,11 @@ model::~model() {
 }
 
 void model::loadFramePoints() {
+  // clear out data, so this can also be used as a reset
+  nodes.clear();
+  edges.clear();
+  faces.clear();
+
   // assumes obj file without the annotations -
     // specifically carFrameWPanels.obj which has a few lines already removed
 
@@ -188,9 +193,9 @@ void model::passNewGPUData() {
 
       points.push_back( glm::vec4( glm::vec3( x, groundHeight, y ), ( -groundHeight + 1.3 ) * 15.0f ) );
 
-      // glm::vec4 sampleColor = groundHeight * displayParameters.groundHigh + ( 1.0f - groundHeight ) * displayParameters.groundLow;
+      glm::vec4 sampleColor = groundHeight * displayParameters.groundHigh + ( 1.0f - groundHeight ) * displayParameters.groundLow;
 
-      glm::vec4 sampleColor = glm::vec4( ( x + 1.0f ) / 2.0f, ( y + 1.5f ) / 3.0f, 0.0f, 1.0f );
+      // glm::vec4 sampleColor = glm::vec4( ( x + 1.0f ) / 2.0f, ( y + 1.5f ) / 3.0f, 0.0f, 1.0f );
 
       colors.push_back( glm::vec4( sampleColor.xyz(), 1.0f ) );
 
@@ -283,21 +288,66 @@ void model::updateUniforms() {
   SDL_GetDesktopDisplayMode( 0, &dm );
 
   float AR = float( dm.w ) / float( dm.h );
-  glm::mat4 proj = glm::perspective( glm::radians( 105.0f ), AR, -1.0f, 3.0f );
+  glm::mat4 proj = glm::perspective( glm::radians( 65.0f ), AR, -1.0f, 3.0f );
 
   glUniformMatrix4fv( glGetUniformLocation( simGeometryShader, "perspective" ), 1, GL_TRUE, glm::value_ptr( proj ) );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "aspect_ratio" ), 1, &AR );
 
   // point size and point highlight
-  glUniform1fv( glGetUniformLocation( simGeometryShader, "defaultPointSize"), 1, &drawParameters.pointScale );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "defaultPointSize" ), 1, &drawParameters.pointScale );
   glUniform1i( glGetUniformLocation( simGeometryShader, "nodeSelect" ), nodeSelect );
 
   // rotation parameters
-  glUniform1fv( glGetUniformLocation( simGeometryShader, "theta"), 1, &displayParameters.theta );
-  glUniform1fv( glGetUniformLocation( simGeometryShader, "phi"), 1, &displayParameters.phi );
-  glUniform1fv( glGetUniformLocation( simGeometryShader, "roll"), 1, &displayParameters.roll );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "theta" ), 1, &displayParameters.theta );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "phi" ), 1, &displayParameters.phi );
+  glUniform1fv( glGetUniformLocation( simGeometryShader, "roll" ), 1, &displayParameters.roll );
 
   // if ( ++nodeSelect == 4 ) nodeSelect = 0;
+}
+
+void model::singleThreadSoftbodyUpdate() {
+  for( auto& n : nodes ) {
+    if( !n.anchored ) {
+      glm::vec3 force = glm::vec3( 0, 0, 0 );
+      float k = 0;
+      float d = 0;
+      //get your forces from all the connections - accumulate in force vector
+      for( auto& e : n.edges ) {
+        switch( e.type ) {
+          case CHASSIS:
+            k = simParameters.chassisKConstant;
+            d = simParameters.chassisDamping;
+            break;
+          case SUSPENSION:
+          case SUSPENSION1:
+            k = simParameters.suspensionKConstant;
+            d = simParameters.suspensionDamping;
+            break;
+          // case TIRE:
+            //tbd, maybe
+            // break;
+        }
+        //get positions of the two nodes involved
+        glm::vec3 myPosition = n.oldPosition;
+        glm::vec3 otherPosition = nodes[ e.node2 ].anchored ?
+          nodes[ e.node2 ].position :    // use new position for anchored nodes ( position is up to date )
+          nodes[ e.node2 ].oldPosition;  // use old position for unanchored nodes ( old value is what you use )
+
+        //less than 1 is shorter, greater than 1 is longer than base length
+        float springRatio = glm::distance( myPosition, otherPosition ) / e.baseLength;
+
+        //spring force
+        force += -k * glm::normalize( myPosition - otherPosition ) * ( springRatio - 1 ); //should this be normalized or no?
+        //force += -k * ( myPosition - otherPosition ) * ( springRatio - 1 );
+
+        force -= d * n.oldVelocity;                           //damping force
+      }
+      force += ( *n.mass ) * glm::vec3( 0.0f, -simParameters.gravity, 0.0f ); // add gravity
+      glm::vec3 acceleration = force / ( *n.mass );                           // get the resulting acceleration
+      n.velocity = n.oldVelocity + acceleration * simParameters.timeScale;    // compute the new velocity
+      n.position = n.oldPosition + n.velocity * simParameters.timeScale;      // get the new position
+    }
+  }
 }
 
 
@@ -308,11 +358,19 @@ void model::update() {
 
   noiseOffset += 0.004;
 
-  nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale;
-  nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale;
-  nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale;
-  nodes[ 3 ].position.y = getGroundPoint( nodes[ 3 ].position.x, nodes[ 3 ].position.z ) / displayParameters.scale;
+  nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+  nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+  nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+  nodes[ 3 ].position.y = getGroundPoint( nodes[ 3 ].position.x, nodes[ 3 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
 
+  // back up velocities and positions in the 'old' values
+  for ( auto& n : nodes )
+    if ( !n.anchored ) {
+      n.oldPosition = n.position;
+      n.oldVelocity = n.velocity;
+    }
+
+  singleThreadSoftbodyUpdate();
   passNewGPUData();
 }
 
@@ -380,6 +438,16 @@ void model::addEdge( int nodeIndex1, int nodeIndex2, edgeType type ) {
   e.type = type;
   e.baseLength = glm::distance( nodes[ e.node1 ].position, nodes[ e.node2 ].position );
   edges.push_back( e );
+
+
+  // add an edge for the first node
+  nodes[ e.node1 ].edges.push_back( e );
+
+  // add an edge for the second node - swap first and second node
+  e.node1 = nodeIndex2;
+  e.node2 = nodeIndex1;
+  nodes[ e.node1 ].edges.push_back( e );
+
 }
 
 // parameters tbd - probably just the

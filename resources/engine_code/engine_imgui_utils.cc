@@ -76,7 +76,7 @@ void engine::showConfigWindow() {
     HelpMarker( "Softbody Simulation Model" );
     if ( ImGui::BeginTabItem( "Simulation" ) ) {
       ImGui::SliderFloat( "Time Scale", &simulationModel.simParameters.timeScale, 0.0f, 0.01f );
-      ImGui::SliderFloat( "Gravity", &simulationModel.simParameters.timeScale, -5.0f, 5.0f );
+      ImGui::SliderFloat( "Gravity", &simulationModel.simParameters.gravity, -5.0f, 5.0f );
       ImGui::Text(" ");
       ImGui::SliderFloat( "Noise Amplitude", &simulationModel.simParameters.noiseAmplitudeScale, 0.0f, 1.0f );
       ImGui::SliderFloat( "Noise Speed", &simulationModel.simParameters.noiseSpeed, 0.0f, 10.0f );
