@@ -76,9 +76,14 @@ struct displayParameterPack {
   glm::vec4 groundHigh      = G1;     // color of the ground at highest point
   glm::vec4 background      = BG;     // OpenGL clear color
 
-  float theta               = -0.25f; // theta euler angle
-  float phi                 = 2.186f; // phi euler angle
-  float roll                = 0.035f; // additional roll parameter
+  // float theta               = -0.25f; // theta euler angle
+  // float phi                 = 2.186f; // phi euler angle
+  // float roll                = 0.035f; // additional roll parameter
+
+  float theta               = -0.27f;  // theta euler angle
+  float phi                 = 3.896f;  // phi euler angle
+  float roll                = -0.325f; // additional roll parameter
+
 
   float scale               = 0.4f;   // scales the frame points, about zero
 };
@@ -157,6 +162,12 @@ private:
   GLuint simGeometryVBO;
   GLuint simGeometryShader;
   GLuint bodyPanelShader;
+
+  // ground data
+  float getGroundPoint( float x, float y );
+  FastNoise::SmartNode<> fnGenerator = FastNoise::New< FastNoise::Perlin > ();
+  float noiseOffset = 0.0;
+
 };
 
 

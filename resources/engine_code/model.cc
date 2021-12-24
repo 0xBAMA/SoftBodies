@@ -6,10 +6,6 @@
 
 model::model() {
 
-  // load the points
-
-  // spawn the threads
-
 }
 
 model::~model() {
@@ -161,6 +157,10 @@ void model::GPUSetup() {
   // bodyPanelShader = Shader();
 }
 
+float model::getGroundPoint( float x, float y ) {
+  return fnGenerator->GenSingle2D( x * displayParameters.scale, y * displayParameters.scale + noiseOffset, 42069 ) * 0.25 - 0.4;
+}
+
 void model::passNewGPUData() {
   // populate the arrays out of the edge and node data
   std::vector< glm::vec4 > points;
@@ -175,17 +175,19 @@ void model::passNewGPUData() {
     tColors.push_back( glm::vec4( 0. ) );
 
   // the ground nodes
-  const int noiseDimX = 150;
-  const int noiseDimY = 75;
-  static auto fnGenerator = FastNoise::New< FastNoise::Perlin > ();
-  static std::vector< float > noiseSamples ( noiseDimX * noiseDimY );
-  fnGenerator->GenUniformGrid2D( noiseSamples.data(), 0, 0, noiseDimX, noiseDimY, 0.015, 42069 );
-  for ( int x = 0; x < noiseDimX; x++ ) {
-    for ( int y = 0; y < noiseDimY; y++ ) {
-      float xMapped = ( float( x ) / float( noiseDimX ) ) - 0.5;
-      float yMapped = ( float( y ) / float( noiseDimY ) ) - 0.5;
-      points.push_back( glm::vec4( xMapped, yMapped, noiseSamples[ x + y * noiseDimX ], 10.0f ) );
-      colors.push_back( glm::vec4( 0.0f ) );
+  for ( float x = -1.0; x < 1.0; x += 0.01 ) {
+    for ( float y = -1.5; y < 1.5; y += 0.01 ) {
+
+      float groundHeight = getGroundPoint( x / displayParameters.scale, y / displayParameters.scale );
+
+      points.push_back( glm::vec4( glm::vec3( x, groundHeight, y ), ( -groundHeight + 1.3 ) * 15.0f ) );
+
+      // glm::vec4 sampleColor = groundHeight * displayParameters.groundHigh + ( 1.0f - groundHeight ) * displayParameters.groundLow;
+
+      glm::vec4 sampleColor = glm::vec4( x, y, 0.0f, 1.0f );
+
+      colors.push_back( glm::vec4( sampleColor.xyz(), 1.0f ) );
+
       tColors.push_back( glm::vec4( 0.0f ) );
     }
   }
@@ -275,7 +277,7 @@ void model::updateUniforms() {
   SDL_GetDesktopDisplayMode( 0, &dm );
 
   float AR = float( dm.w ) / float( dm.h );
-  glm::mat4 proj = glm::perspective( glm::radians( 65.0f ), AR, 10.0f, 10.0f );
+  glm::mat4 proj = glm::perspective( glm::radians( 105.0f ), AR, -1.0f, 3.0f );
 
   glUniformMatrix4fv( glGetUniformLocation( simGeometryShader, "perspective" ), 1, GL_TRUE, glm::value_ptr( proj ) );
   glUniform1fv( glGetUniformLocation( simGeometryShader, "aspect_ratio" ), 1, &AR );
@@ -294,6 +296,17 @@ void model::updateUniforms() {
 
 
 void model::update() {
+  // the wheel points
+
+// fnGenerator->GenSingle2D( xMapped, yMapped + offset, 42069 );
+
+  noiseOffset += 0.004;
+
+  nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale;
+  nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale;
+  nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale;
+  nodes[ 3 ].position.y = getGroundPoint( nodes[ 3 ].position.x, nodes[ 3 ].position.z ) / displayParameters.scale;
+
   passNewGPUData();
 }
 
@@ -337,9 +350,6 @@ void model::display() {
     glDrawArrays( GL_LINES, drawParameters.edgesBase, drawParameters.edgesNum );
   }
 
-
-    // points on the ground surface
-
   // use the other shader / VAO / VBO to do flat shaded polygons for the body panels
     // body panels
 }
@@ -374,8 +384,6 @@ void model::addFace( int nodeIndex1, int nodeIndex2, int nodeIndex3, glm::vec3 n
   f.node3 = nodeIndex3;
 
   // TODO: add normals
-
-
 
   faces.push_back( f );
 }

@@ -1,6 +1,6 @@
 #version 450
 
-in vec3 vPosition;
+in vec4 vPosition;
 in vec4 vColor;
 in vec4 vtColor;
 
@@ -37,16 +37,13 @@ mat3 rotationMatrix(vec3 axis, float angle) {
                 oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
 }
 
-void main()
-{
-    position = vPosition;
-
+void main() {
     //side to side rotation first (about the x axis)
     mat3 rotx = rotationMatrix(vec3(1,0,0), theta);
 
     //then the up and down rotation (about the y axis)
     mat3 roty = rotationMatrix(vec3(0,1,0), phi);
-    vec3 position = roty*rotx*vPosition;
+    position = roty*rotx*vPosition.xyz;
 
 
     vec3 roll_vec = roty*rotx*vec3(0,0,1);
@@ -55,9 +52,12 @@ void main()
     position *= roll_mat;
 
 
-    gl_Position = vec4(position, 1.0);
+    // gl_Position = vec4( ( perspective * vec4( position, 0.0 ) ).xyz, 1.0 );
+    gl_Position = vec4( position, 1.0 );
     gl_Position.x /= aspect_ratio;
     // gl_Position *= perspective;
+
+    // gl_Position.z += 1.;
 
 
     switch ( colorMode ) {
@@ -67,7 +67,7 @@ void main()
           gl_PointSize = 1.618 * defaultPointSize;
           color = vec4( 1.0, 0.0, 0.0, 1.0 );
         } else {
-          gl_PointSize = defaultPointSize;
+          gl_PointSize = vPosition.a;
           color = vColor;
         }
         break;
@@ -86,4 +86,7 @@ void main()
         gl_Position.z += 0.001;
         break;
   }
+
+
+  gl_Position.z *= 0.3;
 }
