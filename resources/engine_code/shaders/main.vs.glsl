@@ -21,9 +21,14 @@ uniform float roll;
 
 uniform float aspect_ratio;
 uniform mat4 perspective;
+uniform vec3 lightPos;
+
 
 out vec4 color;
 out vec3 position;
+out vec3 normal;
+out float lightVal;
+
 
 //thanks to Neil Mendoza via http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
 mat3 rotationMatrix(vec3 axis, float angle) {
@@ -45,12 +50,10 @@ void main() {
     mat3 roty = rotationMatrix(vec3(0,1,0), phi);
     position = roty*rotx*vPosition.xyz;
 
-
     vec3 roll_vec = roty*rotx*vec3(0,0,1);
     mat3 roll_mat = rotationMatrix(roll_vec, roll);
 
     position *= roll_mat;
-
 
     // position = ( perspective * vec4( position, 1.0 ) ).xyz;
 
@@ -59,6 +62,7 @@ void main() {
     // gl_Position.z += 1.;
 
     // float d = 1.5 - distance( vec3( 0. ), vPosition.xyz );
+    position = vPosition.xyz;
 
 
     switch ( colorMode ) {
@@ -84,8 +88,12 @@ void main() {
         break;
 
       case 3: // triangles
-        // color = vColor;
-        color = vtColor;
+        normal = vtColor.xyz;
+        color = vColor;
+
+
+        lightVal = 0.4 * max( dot( normal, lightPos ), 0.0 ) + 0.6;
+
         // color = vPosition;
         gl_Position.z += 0.001;
         break;

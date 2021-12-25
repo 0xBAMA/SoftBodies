@@ -2,21 +2,32 @@
 
 in vec4 color;
 in vec3 position;
+in vec3 normal;
+in float lightVal;
+
 out vec4 fragColor;
 
 uniform int colorMode;
 
+
 void main() {
   fragColor = color;
-
-  // float scalefactor = mix( smoothstep( 1.15, 0.0, gl_FragCoord.z ), 1.25 - gl_FragCoord.z, 0.8);
-  float scalefactor = smoothstep( 1.0, 0.25, gl_FragCoord.z );
-  // float scalefactor = 1.25 - gl_FragCoord.z / 3.;
-  fragColor.xyz *= scalefactor;
 
   if ( colorMode == 0 ) { // color handling for points
     float distanceToCenter = distance( gl_PointCoord.xy, vec2( 0.5, 0.5 ) );
     if ( distanceToCenter >= 0.5 ) discard;
   //   if ( distanceToCenter >= 0.4 ) fragColor = vec4( vec3( 0.0 ), color.a );
   }
+
+
+  if ( colorMode == 3 ) {
+    if ( !gl_FrontFacing ) {
+      fragColor.xyz *= lightVal;
+    }
+  }
+
+  // float scalefactor = mix( smoothstep( 1.15, 0.0, gl_FragCoord.z ), 1.25 - gl_FragCoord.z, 0.8);
+  float scalefactor = smoothstep( 1.0, 0.25, gl_FragCoord.z );
+  // float scalefactor = 1.25 - gl_FragCoord.z / 3.;
+  fragColor.xyz *= scalefactor;
 }

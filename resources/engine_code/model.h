@@ -43,13 +43,13 @@ struct simParameterPack {
   float noiseAmplitudeScale = 0.065;    // scalar on the noise amplitude
   float noiseSpeed          = 8.6;      // how quickly the noise offset increases
 
-  float chassisKConstant    = 5780.0;   // hooke's law spring constant for chassis edges
-  float chassisDamping      = 45.5;     // damping factor for chassis edges
+  float chassisKConstant    = 14000.;   // hooke's law spring constant for chassis edges
+  float chassisDamping      = 51.5;     // damping factor for chassis edges
   float chassisNodeMass     = 3.0;      // mass of a chassis node
   float anchoredNodeMass    = 0.0;      // mass of an anchored node
 
-  float suspensionKConstant = 790.0;    // hooke's law spring constant for suspension edges
-  float suspensionDamping   = 5.22;     // damping factor for suspension edges
+  float suspensionKConstant = 9000.;    // hooke's law spring constant for suspension edges
+  float suspensionDamping   = 32.4;     // damping factor for suspension edges
 };
 
 // consolidate display parameters
