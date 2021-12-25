@@ -9,7 +9,9 @@ uniform int colorMode;
 void main() {
   fragColor = color;
 
-  float scalefactor = mix( smoothstep( 1.15, 0.0, gl_FragCoord.z ), 1.25 - gl_FragCoord.z, 0.3);
+  // float scalefactor = mix( smoothstep( 1.15, 0.0, gl_FragCoord.z ), 1.25 - gl_FragCoord.z, 0.8);
+  float scalefactor = smoothstep( 1.0, 0.25, gl_FragCoord.z );
+  // float scalefactor = 1.25 - gl_FragCoord.z / 3.;
   fragColor.xyz *= scalefactor;
 
   if ( colorMode == 0 ) { // color handling for points

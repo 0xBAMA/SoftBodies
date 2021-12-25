@@ -76,16 +76,16 @@ void engine::showConfigWindow() {
     HelpMarker( "Softbody Simulation Model" );
     if ( ImGui::BeginTabItem( "Simulation" ) ) {
       ImGui::SliderFloat( "Time Scale", &simulationModel.simParameters.timeScale, 0.0f, 0.01f );
-      ImGui::SliderFloat( "Gravity", &simulationModel.simParameters.gravity, -5.0f, 5.0f );
+      ImGui::SliderFloat( "Gravity", &simulationModel.simParameters.gravity, -10.0f, 10.0f );
       ImGui::Text(" ");
-      ImGui::SliderFloat( "Noise Amplitude", &simulationModel.simParameters.noiseAmplitudeScale, 0.0f, 1.0f );
+      ImGui::SliderFloat( "Noise Amplitude", &simulationModel.simParameters.noiseAmplitudeScale, 0.0f, 0.45f );
       ImGui::SliderFloat( "Noise Speed", &simulationModel.simParameters.noiseSpeed, 0.0f, 10.0f );
       ImGui::Text(" ");
       ImGui::SliderFloat( "Chassis Node Mass", &simulationModel.simParameters.chassisNodeMass, 0.1f, 10.0f );
-      ImGui::SliderFloat( "Chassis K", &simulationModel.simParameters.chassisKConstant, 0.0f, 3000.0f );
+      ImGui::SliderFloat( "Chassis K", &simulationModel.simParameters.chassisKConstant, 0.0f, 7000.0f );
       ImGui::SliderFloat( "Chassis Damping", &simulationModel.simParameters.chassisDamping, 0.0f, 100.0f );
       ImGui::Text(" ");
-      ImGui::SliderFloat( "Suspension K", &simulationModel.simParameters.suspensionKConstant, 0.0f, 3000.0f );
+      ImGui::SliderFloat( "Suspension K", &simulationModel.simParameters.suspensionKConstant, 0.0f, 7000.0f );
       ImGui::SliderFloat( "Suspension Damping", &simulationModel.simParameters.suspensionDamping, 0.0f, 100.0f );
       ImGui::EndTabItem();
     }

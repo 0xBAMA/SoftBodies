@@ -9,7 +9,7 @@ model::model() {
   auto fnFractal = FastNoise::New<FastNoise::FractalFBm>();
 
   fnFractal->SetSource( fnSimplex );
-  fnFractal->SetOctaveCount( 5 );
+  fnFractal->SetOctaveCount( 2 );
 
   fnGenerator = fnFractal;
 }
@@ -169,7 +169,7 @@ void model::GPUSetup() {
 }
 
 float model::getGroundPoint( float x, float y ) {
-  return fnGenerator->GenSingle2D( x * displayParameters.scale, y * displayParameters.scale + noiseOffset, 42069 ) * 0.25 - 0.4;
+  return fnGenerator->GenSingle2D( x * displayParameters.scale, y * displayParameters.scale + noiseOffset, 42069 ) * simParameters.noiseAmplitudeScale - 0.4;
 }
 
 void model::passNewGPUData() {
@@ -180,10 +180,12 @@ void model::passNewGPUData() {
 
   // chassis nodes
   drawParameters.nodesBase = points.size();
-  for( auto n : nodes )
-    points.push_back( glm::vec4( n.position * displayParameters.scale, 10.0 ) ),
-    colors.push_back( STEEL ),
-    tColors.push_back( glm::vec4( 0. ) );
+  for ( auto n : nodes )
+    if ( displayParameters.showChassisNodes ) {
+      points.push_back( glm::vec4( n.position * displayParameters.scale, 10.0 ) ),
+      colors.push_back( STEEL ),
+      tColors.push_back( glm::vec4( 0. ) );
+    }
 
   // the ground nodes
   for ( float x = -1.0; x < 1.0; x += 0.01 ) {
@@ -193,7 +195,7 @@ void model::passNewGPUData() {
 
       points.push_back( glm::vec4( glm::vec3( x, groundHeight, y ), ( -groundHeight + 1.3 ) * 15.0f ) );
 
-      glm::vec4 sampleColor = groundHeight * displayParameters.groundHigh + ( 1.0f - groundHeight ) * displayParameters.groundLow;
+      glm::vec4 sampleColor = 4.0f * groundHeight * displayParameters.groundHigh + ( 1.0f -  4.0f * groundHeight ) * displayParameters.groundLow;
 
       // glm::vec4 sampleColor = glm::vec4( ( x + 1.0f ) / 2.0f, ( y + 1.5f ) / 3.0f, 0.0f, 1.0f );
 
@@ -208,10 +210,10 @@ void model::passNewGPUData() {
 
   // edges
   drawParameters.edgesBase = points.size();
-  for( auto e : edges ) {
+  for ( auto e : edges ) {
     points.push_back( glm::vec4( nodes[ e.node1 ].position * displayParameters.scale, 10.0 ) );
     points.push_back( glm::vec4( nodes[ e.node2 ].position * displayParameters.scale, 10.0 ) );
-    switch( e.type ) {
+    switch ( e.type ) {
       case CHASSIS:
         colors.push_back( displayParameters.chassisColor );
         colors.push_back( displayParameters.chassisColor );
@@ -233,7 +235,7 @@ void model::passNewGPUData() {
 
   // faces
   drawParameters.facesBase = points.size();
-  for( auto f : faces ) {
+  for ( auto f : faces ) {
     // bring it in a touch, less collision with the chassis edges
     points.push_back( glm::vec4( nodes[ f.node1 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt, 10.0 ) );
     points.push_back( glm::vec4( nodes[ f.node2 ].position * displayParameters.scale * displayParameters.chassisRescaleAmnt, 10.0 ) );
@@ -243,9 +245,12 @@ void model::passNewGPUData() {
     colors.push_back( displayParameters.faceColor );
     colors.push_back( displayParameters.faceColor );
 
-    tColors.push_back( BLACK );
-    tColors.push_back( BLACK );
-    tColors.push_back( BLACK );
+    // calculate normal
+    glm::vec4 normal = glm::vec4( glm::normalize( glm::cross( nodes[ f.node1 ].position - nodes[ f.node2 ].position, nodes[ f.node1 ].position - nodes[ f.node3 ].position ) ), 1.0 );
+
+    tColors.push_back( normal );
+    tColors.push_back( normal );
+    tColors.push_back( normal );
   }
   drawParameters.facesNum = points.size() - drawParameters.facesBase;
 
@@ -306,14 +311,14 @@ void model::updateUniforms() {
 }
 
 void model::singleThreadSoftbodyUpdate() {
-  for( auto& n : nodes ) {
-    if( !n.anchored ) {
+  for ( auto& n : nodes ) {
+    if ( !n.anchored ) {
       glm::vec3 force = glm::vec3( 0, 0, 0 );
       float k = 0;
       float d = 0;
       //get your forces from all the connections - accumulate in force vector
-      for( auto& e : n.edges ) {
-        switch( e.type ) {
+      for ( auto& e : n.edges ) {
+        switch ( e.type ) {
           case CHASSIS:
             k = simParameters.chassisKConstant;
             d = simParameters.chassisDamping;
@@ -352,12 +357,10 @@ void model::singleThreadSoftbodyUpdate() {
 
 
 void model::update() {
-  // the wheel points
+  // offset the noise over time
+  noiseOffset += 0.001 * simParameters.noiseSpeed;
 
-// fnGenerator->GenSingle2D( xMapped, yMapped + offset, 42069 );
-
-  noiseOffset += 0.004;
-
+  // sample terrain surface height at the wheel points
   nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
   nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
   nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;

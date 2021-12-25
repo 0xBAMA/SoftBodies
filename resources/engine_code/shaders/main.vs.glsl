@@ -64,14 +64,14 @@ void main() {
     switch ( colorMode ) {
       case 0: // points
         gl_Position.z -= 0.001;
-        if ( gl_VertexID == nodeSelect ) { // highlight
-          gl_PointSize = 1.618 * defaultPointSize;
-          color = vec4( 1.0, 0.0, 0.0, 1.0 );
-        } else {
+        // if ( gl_VertexID == nodeSelect ) { // highlight
+        //   gl_PointSize = 1.618 * defaultPointSize;
+        //   color = vec4( 1.0, 0.0, 0.0, 1.0 );
+        // } else {
           gl_PointSize = vPosition.a;
           color = vColor;
           // color.a *= d;
-        }
+        // }
         break;
 
       case 1: // regular lines
@@ -84,7 +84,9 @@ void main() {
         break;
 
       case 3: // triangles
-        color = vColor;
+        // color = vColor;
+        color = vtColor;
+        // color = vPosition;
         gl_Position.z += 0.001;
         break;
   }

@@ -40,11 +40,11 @@ struct simParameterPack {
   float timeScale           = 0.003;    // amount of time that passes per sim tick
   float gravity             = -8.0;     // scales the contribution of force of gravity
 
-  float noiseAmplitudeScale = 0.1;      // scalar on the noise amplitude
-  float noiseSpeed          = 5.0;      // how quickly the noise offset increases
+  float noiseAmplitudeScale = 0.065;    // scalar on the noise amplitude
+  float noiseSpeed          = 8.6;      // how quickly the noise offset increases
 
-  float chassisKConstant    = 1430.0;   // hooke's law spring constant for chassis edges
-  float chassisDamping      = 31.3;     // damping factor for chassis edges
+  float chassisKConstant    = 5780.0;   // hooke's law spring constant for chassis edges
+  float chassisDamping      = 45.5;     // damping factor for chassis edges
   float chassisNodeMass     = 3.0;      // mass of a chassis node
   float anchoredNodeMass    = 0.0;      // mass of an anchored node
 
@@ -61,7 +61,7 @@ struct displayParameterPack {
   bool showChassisFaces     = true;     // add this to the model, triangles using the same nodes as the edges
 
   float depthColorScale     = 1.0;      // adjust the weight of the depth coloring
-  float chassisRescaleAmnt  = 0.985f;   // scales the polygons, to interfere with the lines less
+  float chassisRescaleAmnt  = 0.995f;   // scales the polygons, to interfere with the lines less
 
   float wheelDiameter       = 0.2f;    // offset from the noise read, per wheel
 
@@ -101,12 +101,11 @@ struct drawParameterPack {
   GLuint groundNum;
 
   // lines scaling
-  float lineScale           = 10.0f;
+  float lineScale           = 6.0f;
   float outlineRatio        = 1.3f;
 
   // point scaling
   float pointScale          = 16.0f;
-
 };
 
 class model {
