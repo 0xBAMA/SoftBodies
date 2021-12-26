@@ -62,7 +62,7 @@ void main() {
     // float d = 1.5 - distance( vec3( 0. ), vPosition.xyz );
     position = gl_Position.xyz;
 
-
+    normal = vec3( 0.0 );
     switch ( colorMode ) {
       case 0: // points
         gl_Position.z -= 0.001;
@@ -86,7 +86,7 @@ void main() {
         break;
 
       case 3: // triangles
-        normal = vtColor.xyz;
+        normal = roll_mat * roty * rotx * vtColor.xyz;
         color = vColor;
 
         // color = vPosition;
