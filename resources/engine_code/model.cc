@@ -308,7 +308,7 @@ void model::updateUniforms() {
   glUniform1fv( glGetUniformLocation( simGeometryShader, "roll" ), 1, &displayParameters.roll );
 
   float t = 0.001 * SDL_GetTicks();
-  glUniform3f( glGetUniformLocation( simGeometryShader, "lightPos" ), 2.5 * cos( t ), 0.5 * sin( t ) + 1.0, 2.5 * sin( t ));
+  glUniform3f( glGetUniformLocation( simGeometryShader, "lightPos" ), 0.75 * cos( t ), 0.0, 0.75 * sin( t ) );
 
 
   // if ( ++nodeSelect == 4 ) nodeSelect = 0;
