@@ -21,8 +21,8 @@ void engine::imguiQuit() {
 
 // terminate SDL2
 void engine::SDLQuit() {
-  SDL_GL_DeleteContext(GLcontext);
-  SDL_DestroyWindow(window);
+  SDL_GL_DeleteContext( GLcontext );
+  SDL_DestroyWindow( window );
   SDL_Quit();
 }
 

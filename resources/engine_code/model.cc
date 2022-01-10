@@ -12,10 +12,20 @@ model::model() {
   fnFractal->SetOctaveCount( 2 );
 
   fnGenerator = fnFractal;
+
+  // spawn all the threads
+	for ( int i = 0; i < numThreads; i++ ) {
+		workerState[ i ] = WAITING;
+		workerThreads[ i ] = std::thread( &model::MultiThreadUpdateFunc, this, i );
+	}
 }
 
 model::~model() {
-
+  // quit and join all the threads
+	for ( int i = 0; i < numThreads; i++ ) {
+		workerState[ i ] = QUIT;
+		workerThreads[ i ].join();
+	}
 }
 
 void model::loadFramePoints() {
@@ -190,17 +200,11 @@ void model::passNewGPUData() {
   // the ground nodes
   for ( float x = -1.0; x < 1.0; x += 0.01 ) {
     for ( float y = -1.5; y < 1.5; y += 0.01 ) {
-
       float groundHeight = getGroundPoint( x / displayParameters.scale, y / displayParameters.scale );
-
       points.push_back( glm::vec4( glm::vec3( x, groundHeight, y ), ( -groundHeight + 1.3 ) * 15.0f ) );
-
       glm::vec4 sampleColor = 4.0f * groundHeight * displayParameters.groundHigh + ( 1.0f -  4.0f * groundHeight ) * displayParameters.groundLow;
-
       // glm::vec4 sampleColor = glm::vec4( ( x + 1.0f ) / 2.0f, ( y + 1.5f ) / 3.0f, 0.0f, 1.0f );
-
       colors.push_back( glm::vec4( sampleColor.xyz(), 1.0f ) );
-
       tColors.push_back( glm::vec4( 0.0f ) );
     }
   }
@@ -314,13 +318,13 @@ void model::updateUniforms() {
   // if ( ++nodeSelect == 4 ) nodeSelect = 0;
 }
 
-void model::singleThreadSoftbodyUpdate() {
+void model::SingleThreadSoftbodyUpdate() {
   for ( auto& n : nodes ) {
     if ( !n.anchored ) {
-      glm::vec3 force = glm::vec3( 0, 0, 0 );
+      glm::vec3 forceAccumulator = glm::vec3( 0, 0, 0 );
       float k = 0;
       float d = 0;
-      //get your forces from all the connections - accumulate in force vector
+      //get your forces from all the connections - accumulate in forceAccumulator vector
       for ( auto& e : n.edges ) {
         switch ( e.type ) {
           case CHASSIS:
@@ -346,42 +350,127 @@ void model::singleThreadSoftbodyUpdate() {
         float springRatio = glm::distance( myPosition, otherPosition ) / e.baseLength;
 
         //spring force
-        force += -k * glm::normalize( myPosition - otherPosition ) * ( springRatio - 1 ); //should this be normalized or no?
+        forceAccumulator += -k * glm::normalize( myPosition - otherPosition ) * ( springRatio - 1 ); //should this be normalized or no?
         //force += -k * ( myPosition - otherPosition ) * ( springRatio - 1 );
 
-        force -= d * n.oldVelocity;                           //damping force
+        forceAccumulator -= d * n.oldVelocity;                           //damping force
       }
-      force += ( *n.mass ) * glm::vec3( 0.0f, -simParameters.gravity, 0.0f ); // add gravity
-      glm::vec3 acceleration = force / ( *n.mass );                           // get the resulting acceleration
+      forceAccumulator += ( *n.mass ) * glm::vec3( 0.0f, -simParameters.gravity, 0.0f ); // add gravity
+      glm::vec3 acceleration = forceAccumulator / ( *n.mass );                           // get the resulting acceleration
       n.velocity = n.oldVelocity + acceleration * simParameters.timeScale;    // compute the new velocity
       n.position = n.oldPosition + n.velocity * simParameters.timeScale;      // get the new position
     }
   }
 }
 
+void model::MultiThreadUpdateFunc ( int myThreadIndex ) {
+	// cout << "id is " << myThreadIndex << endl;
+	while ( workerState[ myThreadIndex ] != QUIT ) {
+		if ( workerState[ myThreadIndex ] == WAITING )
+			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+		else if ( workerState[ myThreadIndex ] == WORKING ) {
+			// run the update for all the relevant nodes
+			for ( unsigned int n = myThreadIndex; n < nodes.size(); n += numThreads ) {
+				cout << "thread index " << myThreadIndex << " is updating node " << n << endl;
+		    if ( !nodes[ n ].anchored ) {
+		      glm::vec3 forceAccumulator = glm::vec3( 0, 0, 0 );
+		      float k = 0;
+		      float d = 0;
+		      //get your forces from all the connections - accumulate in forceAccumulator vector
+		      for ( auto& e : nodes[ n ].edges ) {
+		        switch ( e.type ) {
+		          case CHASSIS:
+		            k = simParameters.chassisKConstant;
+		            d = simParameters.chassisDamping;
+		            break;
+		          case SUSPENSION:
+		          case SUSPENSION1:
+		            k = simParameters.suspensionKConstant;
+		            d = simParameters.suspensionDamping;
+		            break;
+		        }
+		        //get positions of the two nodes involved
+		        glm::vec3 myPosition = nodes[ n ].oldPosition;
+		        glm::vec3 otherPosition = nodes[ e.node2 ].anchored ?
+		          nodes[ e.node2 ].position :    // use new position for anchored nodes ( position is up to date )
+		          nodes[ e.node2 ].oldPosition;  // use old position for unanchored nodes ( old value is what you use )
 
-void model::update() {
-  // offset the noise over time
-  noiseOffset += 0.001 * simParameters.noiseSpeed;
-
-  // sample terrain surface height at the wheel points
-  nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
-  nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
-  nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
-  nodes[ 3 ].position.y = getGroundPoint( nodes[ 3 ].position.x, nodes[ 3 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
-
-  // back up velocities and positions in the 'old' values
-  for ( auto& n : nodes )
-    if ( !n.anchored ) {
-      n.oldPosition = n.position;
-      n.oldVelocity = n.velocity;
-    }
-
-  singleThreadSoftbodyUpdate();
-  passNewGPUData();
+		        //less than 1 is shorter, greater than 1 is longer than base length
+		        float springRatio = glm::distance( myPosition, otherPosition ) / e.baseLength;
+		        forceAccumulator += -k * glm::normalize( myPosition - otherPosition ) * ( springRatio - 1 ); // spring force
+		        forceAccumulator -= d * nodes[ n ].oldVelocity;                           //damping force
+		      }
+		      forceAccumulator += ( *nodes[ n ].mass ) * glm::vec3( 0.0f, -simParameters.gravity, 0.0f ); // add gravity
+		      glm::vec3 acceleration = forceAccumulator / ( *nodes[ n ].mass );                           // get the resulting acceleration
+		      nodes[ n ].velocity = nodes[ n ].oldVelocity + acceleration * simParameters.timeScale;    // compute the new velocity
+		      nodes[ n ].position = nodes[ n ].oldPosition + nodes[ n ].velocity * simParameters.timeScale;      // get the new position
+		    }
+		  }
+			cout << "setting " << myThreadIndex << " to wait" << endl;
+			workerState[ myThreadIndex ] = WAITING;
+		}
+	}
 }
 
-void model::display() {
+bool model::AllThreadComplete () {
+	bool check = true;
+	for ( int i = 0; i < numThreads; i++ ) {
+		if ( workerState[ i ] == WORKING ) {
+			check = false;
+			cout << "thread " << i << " is still working" << endl;
+		}
+	}
+	return check;
+}
+
+void model::EnableAllWorkers () {
+	for( int i = 0; i < numThreads; i++ ) {
+		workerState[ i ] = WORKING;
+	}
+}
+
+void model::CachePreviousValues () {
+	for ( auto& n : nodes )
+		if ( !n.anchored ) {
+			n.oldPosition = n.position;
+			n.oldVelocity = n.velocity;
+		}
+}
+
+void model::Update () {
+	// offset the noise over time
+	noiseOffset += 0.001 * simParameters.noiseSpeed;
+
+	// sample terrain surface height at the wheel points
+	nodes[ 0 ].position.y = getGroundPoint( nodes[ 0 ].position.x, nodes[ 0 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+	nodes[ 1 ].position.y = getGroundPoint( nodes[ 1 ].position.x, nodes[ 1 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+	nodes[ 2 ].position.y = getGroundPoint( nodes[ 2 ].position.x, nodes[ 2 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+	nodes[ 3 ].position.y = getGroundPoint( nodes[ 3 ].position.x, nodes[ 3 ].position.z ) / displayParameters.scale + displayParameters.wheelDiameter;
+
+	// back up velocities and positions in the 'old' values
+
+	// single threaded update structure
+	// auto tstart = std::chrono::high_resolution_clock::now();
+	// for ( int i = 0; i < 10; i++ ){
+	// 	CachePreviousValues();
+	// 	SingleThreadSoftbodyUpdate();
+	// }
+	// cout << "singlethread update (x10) " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-tstart).count() << "ns\n";
+
+	// multithreaded update structure
+	auto tstartm = std::chrono::high_resolution_clock::now();
+	// for ( int i = 0; i < 10; i++ ){
+		CachePreviousValues();
+		EnableAllWorkers();							// set worker thread enable flag
+		while( !AllThreadComplete() );	// wait for all threads to reach completion
+	// }
+	cout << "multithread update " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-tstartm).count() << "ns\n";
+
+	// pass the new GPU data
+	passNewGPUData();
+}
+
+void model::Display() {
   // OpenGL config
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_LINE_SMOOTH );
@@ -423,10 +512,6 @@ void model::display() {
 
   // use the other shader / VAO / VBO to do flat shaded polygons for the body panels
     // body panels
-}
-
-bool model::allThreadComplete() {
-  return false;
 }
 
 void model::addNode( float* mass, glm::vec3 position, bool anchored ) {

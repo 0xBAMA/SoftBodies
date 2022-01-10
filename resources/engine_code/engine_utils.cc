@@ -37,8 +37,8 @@ bool engine::mainLoop() {
   mainDisplay();
 
   // run the display function for the model data
-  simulationModel.update();
-  simulationModel.display();
+  simulationModel.Update();
+  simulationModel.Display();
 
   // do all the gui stuff
   imguiPass();

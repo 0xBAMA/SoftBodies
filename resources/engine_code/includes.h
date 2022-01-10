@@ -16,6 +16,8 @@
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <thread>
+#include <atomic>
 #include <sstream>
 #include <string>
 #include <vector>
